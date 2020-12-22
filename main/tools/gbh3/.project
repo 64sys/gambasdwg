@@ -1,0 +1,11 @@
+# Gambas Project File 3.0
+Title=gbh3
+Startup=MMain
+Icon=icon.png
+Version=3.14.90
+VersionFile=1
+Description="Extract help comments from C/C++ source files and format them into a .help file."
+Authors="(C) 2014 Tobias Boege <tobias@gambas-buch.de>, GPLv2+"
+TabSize=2
+Language=en_GB
+Packager=1

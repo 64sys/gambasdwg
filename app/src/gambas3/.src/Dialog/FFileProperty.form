@@ -1,0 +1,38 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,62,56)
+  Arrangement = Arrange.Vertical
+  Spacing = True
+  Margin = True
+  { panStat Panel
+    MoveScaled(43,5,29,24)
+    Visible = False
+    Arrangement = Arrange.Fill
+    Margin = True
+    { gvwStat GridView
+      MoveScaled(3,3,23,18)
+      Background = Color.Background
+      Border = False
+      Grid = False
+    }
+  }
+  { fprInfo FileProperties
+    MoveScaled(2,2,36,37)
+    Expand = True
+  }
+  { HBox1 HBox
+    MoveScaled(1,43,40,4)
+    { Panel3 Panel
+      MoveScaled(11,0,3,4)
+      Expand = True
+    }
+    { btnClose Button
+      MoveScaled(20,0,16,4)
+      Text = ("Close")
+      Picture = Picture["icon:/small/close"]
+      Default = True
+      Cancel = True
+    }
+  }
+}

@@ -1,0 +1,387 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: gb.form.mdi 3.10.90\n"
+"POT-Creation-Date: 2020-11-18 18:30 UTC\n"
+"PO-Revision-Date: 2018-03-17 10:03 UTC\n"
+"Last-Translator: benoit <benoit@benoit-kubuntu>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: .project:1
+msgid "Multiple document interface management"
+msgstr "Interface de gestion multi document."
+
+#: FMain.form:35 FMain2.form:35 Form3.form:113
+msgid "Save"
+msgstr ""
+
+#: FMain.form:66
+msgid "Hello"
+msgstr ""
+
+#: FMain.form:107
+msgid "Border"
+msgstr ""
+
+#: FMain.form:112
+msgid "Window"
+msgstr ""
+
+#: FMain.form:117
+msgid "Orientation"
+msgstr ""
+
+#: FMain1.form:44
+msgid "Help"
+msgstr ""
+
+#: FMain1.form:58
+msgid "Button1"
+msgstr ""
+
+#: FMain1.form:79
+msgid "Reparent"
+msgstr ""
+
+#: FMain2.form:25
+msgid "Agnostic Scan Tool"
+msgstr ""
+
+#: FMain2.form:30
+msgid "Menu1"
+msgstr ""
+
+#: FMain2.form:41
+msgid "Save as"
+msgstr ""
+
+#: FMain2.form:50
+msgid "Properties"
+msgstr ""
+
+#: FMain2.form:59
+msgid "Quit"
+msgstr ""
+
+#: FMain2.form:95
+msgid "Numériser Texte"
+msgstr ""
+
+#: FShortcut.class:65
+msgid "Action"
+msgstr "Action"
+
+#: FShortcut.class:67
+msgid "Shortcut"
+msgstr "Raccourci"
+
+#: FShortcut.class:178
+msgid "Go back"
+msgstr "Revenir"
+
+#: FShortcut.class:178
+msgid "You are going back to the default shortcuts."
+msgstr "Vous allez revenir aux raccourcis initiaux."
+
+#: FShortcut.class:264
+msgid "Unable to export shortcut files."
+msgstr "Impossible d'exporter les fichiers de raccourcis."
+
+#: FShortcut.class:281
+msgid "This file is not a Gambas shortcuts file."
+msgstr "Ce fichier n'est pas un fichier de raccourcis Gambas."
+
+#: FShortcut.class:305
+msgid "Unable to import shortcut files."
+msgstr "Impossible d'importer les fichiers de raccourcis."
+
+#: FShortcut.class:313
+msgid "Gambas shortcuts files"
+msgstr "Fichiers de raccourcis Gambas"
+
+#: FShortcut.class:314
+msgid "Export shortcuts"
+msgstr "Exporter les raccourcis"
+
+#: FShortcut.class:327
+msgid "Import shortcuts"
+msgstr "Importer des raccourcis"
+
+#: FShortcut.form:17
+msgid "Configure shortcuts"
+msgstr "Configurer les raccourcis"
+
+#: FShortcut.form:42
+msgid "Find shortcut"
+msgstr "Trouver un raccourci"
+
+#: FShortcut.form:49 FToolBarConfig.form:127
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: FShortcut.form:55 Form3.form:171
+msgid "Import"
+msgstr "Importer"
+
+#: FShortcut.form:61 Form3.form:461
+msgid "Export"
+msgstr "Exporter"
+
+#: FShortcut.form:72
+msgid "OK"
+msgstr "OK"
+
+#: FShortcut.form:78 FToolBarConfig.form:72
+msgid "Cancel"
+msgstr "Annuler"
+
+#: FShortcutEditor.class:75
+msgid "This shortcut is already used by the following action:"
+msgstr "Ce raccourci est déjà utilisé par l'action suivante:"
+
+#: FToolBar.class:1219
+msgid "Configure &1 toolbar"
+msgstr "Configurer la barre d'outils &1"
+
+#: FToolBar.class:1221
+msgid "Configure main toolbar"
+msgstr "Configurer la barre d'outils principale"
+
+#: FToolBarConfig.class:47
+msgid "'&1' toolbar configuration"
+msgstr "Configuration de la barre d'outils « &1 »"
+
+#: FToolBarConfig.class:49
+msgid "Toolbar configuration"
+msgstr "Configuration de la barre d'outils"
+
+#: FToolBarConfig.class:146
+msgid "Separator"
+msgstr "Séparateur"
+
+#: FToolBarConfig.class:148
+msgid "Expander"
+msgstr "Extenseur"
+
+#: FToolBarConfig.class:150
+msgid "Space"
+msgstr "Espace"
+
+#: FToolBarConfig.class:387
+msgid "Do you really want to reset the toolbar?"
+msgstr "Désirez-vous vraiment réinitialiser la barre d'outils ?"
+
+#: FToolBarConfig.form:35
+msgid "Configure"
+msgstr "Configurer"
+
+#: FToolBarConfig.form:40
+msgid "Icon size"
+msgstr "Taille des icônes"
+
+#: FToolBarConfig.form:43
+msgid "Tiny"
+msgstr "Minuscule"
+
+#: FToolBarConfig.form:48
+msgid "Small"
+msgstr "Petite"
+
+#: FToolBarConfig.form:53
+msgid "Medium"
+msgstr "Moyenne"
+
+#: FToolBarConfig.form:58
+msgid "Large"
+msgstr "Grande"
+
+#: FToolBarConfig.form:63
+msgid "Huge"
+msgstr "Enorme"
+
+#: FToolBarConfig.form:105
+msgid "Size"
+msgstr "Taille"
+
+#: FToolBarConfig.form:121 Form3.form:403
+msgid "Undo"
+msgstr "Annuler"
+
+#: FToolBarConfig.form:133
+msgid "Close"
+msgstr "Fermer"
+
+#: FWorkspace.form:36
+msgid "Show"
+msgstr "Afficher"
+
+#: FWorkspace.form:41
+msgid "Sort tabs"
+msgstr "Trier les onglets"
+
+#: FWorkspace.form:50
+msgid "Close tabs on the right"
+msgstr "Fermer les onglets à droite"
+
+#: FWorkspace.form:55
+msgid "Close other tabs"
+msgstr "Fermer les autres onglets"
+
+#: FWorkspace.form:60
+msgid "Close all tabs"
+msgstr "Fermer tous les onglets"
+
+#: FWorkspace.form:67
+msgid "Attach tab"
+msgstr "Attacher l'onglet"
+
+#: FWorkspace.form:71
+msgid "Detach tab"
+msgstr "Détacher l'onglet"
+
+#: FWorkspace.form:76
+msgid "Close tab"
+msgstr "Fermer l'onglet"
+
+#: FWorkspace.form:85
+msgid "Previous tab"
+msgstr "Onglet précédent"
+
+#: FWorkspace.form:91
+msgid "Next tab"
+msgstr "Onglet suivant"
+
+#: Form3.form:81
+msgid "Connection editor"
+msgstr ""
+
+#: Form3.form:92
+msgid "Show system tables"
+msgstr ""
+
+#: Form3.form:103
+#, fuzzy
+msgid "New table"
+msgstr "Onglet suivant"
+
+#: Form3.form:121
+msgid "Reload"
+msgstr ""
+
+#: Form3.form:132
+#, fuzzy
+msgid "Delete table"
+msgstr "Détacher l'onglet"
+
+#: Form3.form:135
+msgid "Remove"
+msgstr ""
+
+#: Form3.form:141
+msgid "Rename table"
+msgstr ""
+
+#: Form3.form:144
+msgid "Rename"
+msgstr ""
+
+#: Form3.form:150
+#, fuzzy
+msgid "Copy table"
+msgstr "Fermer l'onglet"
+
+#: Form3.form:153
+msgid "Copy"
+msgstr ""
+
+#: Form3.form:159
+#, fuzzy
+msgid "Paste table"
+msgstr "Fermer l'onglet"
+
+#: Form3.form:162
+msgid "Paste"
+msgstr ""
+
+#: Form3.form:168
+msgid "Import text file"
+msgstr ""
+
+#: Form3.form:213
+msgid "Fields"
+msgstr ""
+
+#: Form3.form:229
+msgid "Add"
+msgstr ""
+
+#: Form3.form:243
+msgid "Down"
+msgstr ""
+
+#: Form3.form:250
+msgid "Up"
+msgstr ""
+
+#: Form3.form:258
+msgid "Copy field list"
+msgstr ""
+
+#: Form3.form:276
+msgid "Indexes"
+msgstr ""
+
+#: Form3.form:293
+msgid "New index"
+msgstr ""
+
+#: Form3.form:353
+msgid "Run query"
+msgstr ""
+
+#: Form3.form:359
+msgid "New query"
+msgstr ""
+
+#: Form3.form:361
+msgid "New"
+msgstr ""
+
+#: Form3.form:367
+msgid "Remove query"
+msgstr ""
+
+#: Form3.form:375
+msgid "Clear"
+msgstr ""
+
+#: Form3.form:382
+msgid "Cut"
+msgstr ""
+
+#: Form3.form:410
+msgid "Redo"
+msgstr ""
+
+#: Form3.form:451
+msgid "Edit"
+msgstr ""
+
+#: Form3.form:458
+msgid "Export to CSV file"
+msgstr ""
+
+#: Form3.form:488
+msgid "Delete"
+msgstr ""
+
+#: Form3.form:496
+msgid "Select all"
+msgstr ""
+
+#: Form3.form:504
+msgid "Unselect all"
+msgstr ""

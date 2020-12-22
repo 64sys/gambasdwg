@@ -1,0 +1,75 @@
+' Gambas class file
+
+Public Sub ChkProxy_Click()
+
+
+  If ChkProxy.Value = True Then
+    TxtProxy.Enabled = True
+    LblAuth.Enabled = True
+    LblProxyUser.Enabled = True
+    TxtProxyUser.Enabled = True
+    LblProxyPassword.Enabled = True
+    TxtProxyPassword.Enabled = True
+    CmbProxyAuth.Enabled = True
+  Else
+    TxtProxy.Enabled = False
+    LblAuth.Enabled = False
+    LblProxyUser.Enabled = False
+    TxtProxyUser.Enabled = False
+    LblProxyPassword.Enabled = False
+    TxtProxyPassword.Enabled = False
+    CmbProxyAuth.Enabled = False
+  End If
+
+End
+
+
+Public Sub Form_Open()
+
+  
+  TxtCookies.Text = ClsParams.CookiesFile
+  ChkUpdate.Value = ClsParams.UpdateCookies
+  
+  ChkProxy.Value = ClsParams.UseProxy
+  TxtProxy.Text = ClsParams.ProxyHost
+  TxtProxyUser.Text = ClsParams.ProxyUser
+  TxtProxyPassword.Text = ClsParams.ProxyPwd
+ 
+ 
+  Select Case ClsParams.ProxyAuth
+    Case Net.AuthBasic
+      CmbProxyAuth.Index = 0
+    Case Net.AuthNTLM
+      CmbProxyAuth.Index = 1
+  End Select
+  
+
+End
+
+Public Sub Form_Close()
+
+  ClsParams.CookiesFile = TxtCookies.Text
+  ClsParams.UpdateCookies = ChkUpdate.Value
+  
+  ClsParams.UseProxy = ChkProxy.Value
+  ClsParams.ProxyHost = TxtProxy.Text
+  ClsParams.ProxyUser = TxtProxyUser.Text 
+  ClsParams.ProxyPwd = TxtProxyPassword.Text
+   
+  If ClsParams.ProxyUser = "" And ClsParams.ProxyPwd = "" Then
+    ClsParams.ProxyAuth = Net.AuthNone
+  Else
+    Select Case CmbProxyAuth.Index
+        Case 0
+          ClsParams.ProxyAuth = Net.AuthBasic
+        Case 1
+          ClsParams.ProxyAuth = Net.AuthNTLM
+    End Select
+  End If
+End
+
+Public Sub Button1_Click()
+
+  Me.Close  
+
+End

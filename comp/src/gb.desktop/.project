@@ -1,0 +1,16 @@
+# Gambas Project File 3.0
+Title=Desktop-neutral routines from Portland project
+Startup=Main
+Version=3.15.90
+VersionFile=1
+Component=gb.image
+Component=gb.gui
+Component=gb.form
+TabSize=2
+Language=fr
+Type=Component
+Maintainer=benoit
+Vendor=Princeton
+Address=benoit@localhost
+License=General Public Licence
+Packager=1

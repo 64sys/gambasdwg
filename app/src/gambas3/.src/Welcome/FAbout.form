@@ -1,0 +1,37 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,69,68)
+  Text = ("About Gambas")
+  Icon = Picture["img/logo/head-32.png"]
+  Resizable = False
+  Transparent = True
+  Arrangement = Arrange.Vertical
+  { dwgWelcome DrawingArea
+    MoveScaled(0,0,69,26)
+  }
+  { lblLicense TextLabel
+    MoveScaled(8,8,43,22)
+    Visible = False
+    Text = ("This program is FREE SOFTWARE; you can redistribute it AND/OR modify it under the terms of the GNU General Public License as published by the Free Software Foundation ; either version 2, or (at your option) any later version.<br><br>This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n")
+    Alignment = Align.Top
+  }
+  { dwgAbout DrawingArea
+    MoveScaled(27,40,24,18)
+    Expand = True
+  }
+  { gvwAbout GridView
+    MoveScaled(7,34,16,16)
+    Background = Color.Transparent
+    Expand = True
+    Ignore = True
+    Border = False
+    Grid = False
+    ScrollBar = Scroll.None
+  }
+  { timAbout #Timer
+    #MoveScaled(48,38)
+    Enabled = True
+    Delay = 25
+  }
+}

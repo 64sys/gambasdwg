@@ -1,0 +1,35 @@
+' Gambas class file
+
+Public Sub cmdCancel_Click()
+
+  FBoardSelect.Close
+
+End
+
+Public Sub Form_Show()
+
+  Dim i As Byte
+  
+  ' Fill in the combo box text section
+  cboLayout.Text = Global.boarddesign[Global.selectedlayout].Name
+
+  ' Fill in the combo box dropdown section
+  For i = 0 To Global.boarddesign.Count - 1
+    cboLayout.Add(Global.boarddesign[i].Name)
+  Next
+
+End
+
+
+Public Sub cmdOK_Click()
+
+  ' Set board layout index
+  Global.selectedlayout = cboLayout.Index
+
+  ' Reset board
+  FGameArea.reset_board()
+
+  ' Close this window
+  FBoardSelect.Close
+
+End

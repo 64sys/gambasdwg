@@ -1,0 +1,84 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,115,89)
+  Icon = Picture["icon:/small/save"]
+  Arrangement = Arrange.Vertical
+  Spacing = True
+  Margin = True
+  { tabVersionControl TabPanel
+    MoveScaled(1,1,59,54)
+    Expand = True
+    Arrangement = Arrange.Fill
+    Count = 4
+    Index = 0
+    Text = ("Journal")
+    { edtJournal TextEditor
+      MoveScaled(13.25,11.125,16,16)
+      Border = False
+    }
+    Index = 1
+    Text = ("Changes")
+    { edtDiff TextEditor
+      MoveScaled(12,23,16,16)
+      Border = False
+      Highlight = "Diff"
+      ReadOnly = True
+      Wrap = True
+    }
+    { txtDiffNothing TextLabel
+      MoveScaled(4,3,43,13)
+      Visible = False
+      Font = Font["Italic,+4"]
+      Padding = 16
+      Text = ("There is nothing to commit.")
+      Alignment = Align.TopLeft
+    }
+    Index = 2
+    Text = ("History")
+    { edtHistory TextEditor
+      MoveScaled(12,10,16,16)
+      Border = False
+      Highlight = "Custom"
+      ReadOnly = True
+      Wrap = True
+    }
+    Index = 3
+    Text = ("Terminal")
+    { trmShell TerminalView
+      MoveScaled(11.25,13.75,16,16)
+      Border = False
+    }
+    Index = 0
+  }
+  { HBox1 HBox
+    MoveScaled(1,59,110,4)
+    Spacing = True
+    { Panel1 Panel
+      MoveScaled(3,0,4,4)
+      Expand = True
+    }
+    { btnCommit Button
+      MoveScaled(32,0,16,4)
+      Text = ("Commit") & "..."
+      Picture = Picture["icon:/small/apply"]
+    }
+    { btnCommitPush Button
+      MoveScaled(49,0,24,4)
+      AutoResize = True
+      Text = ("Commit and push") & "..."
+      Picture = Picture["icon:/small/upload"]
+      Default = True
+    }
+    { btnPush Button
+      MoveScaled(74,0,16,4)
+      Text = ("Push") & "..."
+      Picture = Picture["icon:/small/upload"]
+    }
+    { btnCancel Button
+      MoveScaled(92,0,16,4)
+      Text = ("Cancel")
+      Cancel = True
+    }
+  }
+}

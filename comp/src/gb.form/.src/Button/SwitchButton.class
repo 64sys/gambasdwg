@@ -1,0 +1,251 @@
+' Gambas class file
+
+Export
+
+Inherits UserControl
+
+Public Const _Properties As String = "*,Action,Value,Animated"
+Public Const _DefaultEvent As String = "Click"
+Public Const _DefaultSize As String = "16,4"
+Public Const _Similar As String = "Button"
+
+Event Click
+
+Property Value As Boolean
+Property Animated As Boolean
+Property Background As Integer
+
+Private $hDrawingArea As DrawingArea
+Private $fValue As Float
+Private $fTargetValue As Float
+Private $hTimer As Timer
+Private $bPressed As Boolean
+Private $iBg As Integer = Color.Default
+Private $bAnimated As Boolean
+
+Public Sub _new()
+  
+  $hDrawingArea = New DrawingArea(Me) As "DrawingArea"
+  $hDrawingArea.Focus = True
+  
+End
+
+
+Private Function Animated_Read() As Boolean
+
+  Return $bAnimated
+
+End
+
+Private Sub Animated_Write(Value As Boolean)
+
+  $bAnimated = Value
+  
+End
+
+Private Function Value_Read() As Boolean
+
+  Return $fValue >= 0.5
+
+End
+
+Private Sub Value_Write(Value As Boolean)
+
+  Dim fValue As Float
+
+  If $hTimer Then $hTimer.Stop
+  fValue = IIf(Value, 1, 0)
+  If fValue <> $fValue Then
+    $fValue = fValue
+    $hDrawingArea.Refresh
+    Raise Click
+  Endif
+
+End
+
+Public Sub DrawingArea_Draw()
+  
+  Dim iCol As Integer
+  Dim iFlag As Integer = Style.StateOf($hDrawingArea)
+  Dim X As Float
+  Dim Y As Integer
+  Dim DS As Integer
+
+  iCol = Color.Merge(Color.Merge(Color.TextForeground, Color.SelectedBackground, $fValue), Color.Background)
+  If iFlag And Style.Disabled Then iCol = Color.Merge(iCol, Color.Background, 0.75)
+  
+  DS = Desktop.Scale
+  Paint.Rectangle(DS, (Paint.H - DS * 1.5) / 2, Paint.W - DS * 2, DS * 1.5, DS)
+  Paint.Background = iCol
+  Paint.Fill
+  
+  X = (Paint.W - DS * 4) * $fValue + DS / 2
+  Y = (Paint.H - DS * 3) / 2
+  
+  Paint.Ellipse(X, Y, DS * 3, DS * 3)
+  Paint.Background = iCol
+  Paint.Fill()
+  
+  iCol = Color.Merge(Color.ButtonBackground, Color.SelectedBackground, $fValue)
+  If iFlag And Style.Disabled Then iCol = Color.Merge(iCol, Color.Background, 0.75)
+
+  Paint.Ellipse(X + 2, Y + 2, DS * 3 - 4, DS * 3 - 4)
+  Paint.Background = iCol
+  Paint.Fill()
+  
+  If iFlag And Style.HasFocus Then
+    Paint.Ellipse(X - DS / 2, Y - DS / 2, DS * 4, DS * 4)
+    Paint.Background = Color.SetAlpha(Color.SelectedBackground, 200)
+    Paint.Fill
+  Endif
+  
+  
+  
+End
+
+Public Sub DrawingArea_Enter()
+  
+  $hDrawingArea.Refresh
+
+End
+
+Public Sub DrawingArea_Leave()
+  
+  $hDrawingArea.Refresh
+  
+End
+
+Public Sub DrawingArea_GotFocus()
+  
+  $hDrawingArea.Refresh
+
+End
+
+Public Sub DrawingArea_LostFocus()
+  
+  $hDrawingArea.Refresh
+  
+End
+
+
+Public Sub DrawingArea_MouseDown()
+  
+  Dim hRect As Rect
+  
+  If Not Me.Enabled Then Return
+  If Me.Design Then Return
+  If $hTimer And If $hTimer.Enabled Then Return
+  
+  If $fValue = 0 Then
+    hRect = New Rect(0, 0, $hDrawingArea.W / 2, $hDrawingArea.H)
+  Else If $fValue = 1 Then
+    hRect = New Rect($hDrawingArea.W / 2, 0, $hDrawingArea.W / 2, $hDrawingArea.H)
+  Endif
+  
+  If Not hRect Then Return
+  
+  hRect.Adjust(Style.FrameWidth)
+  
+  If Not hRect.Contains(Mouse.X, Mouse.Y) Then Return
+  
+  $bPressed = True
+  $hDrawingArea.Refresh
+  
+End
+
+Private Sub ToggleAnimate()
+  
+  If $bAnimated And If Application.Animations Then
+    If $fValue < 0.5 Then
+      $fTargetValue = 1
+    Else
+      $fTargetValue = 0
+    Endif
+    If Not $hTimer Then
+      $hTimer = New Timer As "Timer"
+      $hTimer.Delay = 20
+    Endif
+    $hTimer.Start
+  Else
+    $hTimer = Null
+    Me.Value = Not Me.Value
+  Endif
+  
+End
+
+
+Public Sub DrawingArea_MouseUp()
+  
+  If Not Me.Enabled Then Return
+  If Me.Design Then Return
+
+  If $bPressed Then 
+    $bPressed = False
+    $hDrawingArea.Refresh
+  Endif
+  
+  ToggleAnimate
+
+End
+
+Public Sub Timer_Timer()
+
+  Dim fInc As Float
+  
+  fInc = ($fTargetValue - $fValue) / 2
+  If Abs(fInc) < 0.01 Then fInc = 0.05 * Sgn(fInc)
+  $fValue += fInc
+  
+  If $fValue < 0 Then
+    $fValue = 0
+    $hTimer.Stop
+    Raise Click
+  Else If $fValue > 1 Then
+    $fValue = 1
+    $hTimer.Stop
+    Raise Click
+  Endif
+  
+  $hDrawingArea.Refresh
+  
+End
+
+Private Function Background_Read() As Integer
+
+  Return $iBg
+
+End
+
+Private Sub Background_Write(Value As Integer)
+
+  $iBg = Value
+  $hDrawingArea.Refresh
+
+End
+
+Public Sub DrawingArea_MouseWheel()
+  
+  'If Not Me.Enabled Then Return
+  If Not Mouse.Forward Xor Me.Value Then
+    ToggleAnimate
+  Endif
+  
+End
+
+Public Sub DrawingArea_KeyPress()
+  
+  Select Key.Code
+    
+    Case Key.Left
+      If Me.Value Then ToggleAnimate
+      
+    Case Key.Right
+      If Not Me.Value Then ToggleAnimate
+      
+    Case Key.Space
+      ToggleAnimate
+    
+    
+  End Select
+  
+End

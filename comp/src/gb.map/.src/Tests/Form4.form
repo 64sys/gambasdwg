@@ -1,0 +1,10 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,64,64)
+  Arrangement = Arrange.Fill
+  { MapView1 MapView
+    MoveScaled(2,2,56,56)
+    AllowEffect = False
+  }
+}

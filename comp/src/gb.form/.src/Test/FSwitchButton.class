@@ -1,0 +1,13 @@
+' Gambas class file
+
+Public Sub Form_Open()
+
+  Application.Animations = True
+
+End
+
+Public Sub URLLabel1_Click()
+
+  
+
+End

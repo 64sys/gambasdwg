@@ -1,0 +1,8 @@
+' Gambas class file
+
+
+Public Sub Form_Open()
+
+  DateBox1.Value = Date(30, 1, 1)
+
+End

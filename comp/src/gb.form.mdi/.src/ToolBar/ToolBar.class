@@ -1,0 +1,205 @@
+' Gambas class file
+
+Export
+
+Inherits UserContainer
+
+Public Const _Properties As String = "*,-Arrangement,-Padding,-Spacing,-Indent,-Invert,Key,Text,Action,Orientation{ToolBar.Horizontal;Vertical},Size{Tiny;Small;Medium;Large;Huge}=Small,AutoResize=True,Separator"
+Public Const _DefaultArrangement As String = "R"
+Public Const _DefaultSize As String = "36,4"
+
+Public Enum Horizontal, Vertical
+
+Event Configure
+
+Property Design As Boolean
+Property Orientation As Integer
+Property AutoResize As Boolean
+Property Key As String
+Property Text As String
+Property Separator As Boolean
+Property Size As String
+Property Settings, Layout As String
+
+Private $hForm As FToolBar
+
+Public Sub _new()
+  
+  $hForm = New FToolBar(Me)
+  Me._Container = $hForm.GetContainer()
+  'Super.AutoResize = True
+  
+End
+
+Public Sub Configure()
+  
+  If Not Me.Key Then Error.Raise("The Key property must be defined")
+  Action._ConfigureToolbar(Me)
+  
+End
+
+Private Function Design_Read() As Boolean
+
+  Return Super.Design
+
+End
+
+Private Sub Design_Write(Value As Boolean)
+
+  Super.Design = Value
+  If Value Then $hForm.SetDesign()
+  
+End
+
+' Private Function Hidden_Read() As Boolean
+' 
+'   Return $hForm.IsHidden()  
+' 
+' End
+' 
+' Private Sub Hidden_Write(Value As Boolean)
+' 
+'     $hForm.SetHidden(Value)
+' 
+' End
+
+' Private Function Action_Read() As String
+' 
+'   Return Action.Get(Me)  
+' 
+' End
+' 
+' Private Sub Action_Write(Value As String)
+' 
+'   Action.Register(Me, Value)
+' 
+' End
+
+Private Function Orientation_Read() As Integer
+
+  Return If($hForm.IsVertical(), 1, 0)
+
+End
+
+Private Sub Orientation_Write(Value As Integer)
+
+  $hForm.SetVertical(Value)
+
+End
+
+Private Function AutoResize_Read() As Boolean
+
+  Return $hForm.IsAutoResize()
+
+End
+
+Private Sub AutoResize_Write(Value As Boolean)
+
+  $hForm.SetAutoResize(Value)
+
+End
+
+Private Function Key_Read() As String
+
+  Return $hForm.GetKey()
+
+End
+
+Private Sub Key_Write(Value As String)
+
+  $hForm.SetKey(Value)
+
+End
+
+Private Function Text_Read() As String
+
+  Return $hForm.Text
+
+End
+
+Private Sub Text_Write(Value As String)
+
+  $hForm.SetText(Value)
+
+End
+
+Public Sub _RaiseConfigure()
+  
+  Raise Configure
+  
+End
+
+Private Function Separator_Read() As Boolean
+
+  Return $hForm.HasSeparator()
+
+End
+
+Private Sub Separator_Write(Value As Boolean)
+
+  $hForm.SetSeparator(Value)
+
+End
+
+Private Function Size_Read() As String
+
+  Return $hForm.GetStockIconSize()
+
+End
+
+Private Sub Size_Write(Value As String)
+
+  $hForm.SetStockIconSize(Value)
+
+End
+
+Static Private Sub LayoutToString(vLayout As Variant) As String
+  
+  Dim aSettings As New String[]
+
+  aSettings.Add(vLayout[0])
+  If vLayout[1] Then aSettings.Insert(vLayout[1])
+  Return aSettings.Join()
+  
+End
+
+Static Private Sub LayoutFromString(sLayout As String) As Variant
+  
+  Dim aSettings As String[]
+  Dim sSize As String
+
+  aSettings = Split(sLayout)
+  If aSettings.Count = 0 Then Return
+  
+  sSize = aSettings[0]
+  aSettings.Remove(0)
+  If aSettings.Count = 0 Then aSettings = Null
+  
+  Return [sSize, aSettings]
+    
+End
+
+Private Function Settings_Read() As String
+
+  Return LayoutToString($hForm.GetLayout())
+
+End
+
+Private Sub Settings_Write(Value As String)
+
+  $hForm.SetLayout(LayoutFromString(Value))
+
+End
+
+Static Public Sub GetLayout((Key) As String) As String
+
+  Return LayoutToString(FToolBar.LoadLayout(Key))
+  
+End
+
+Static Public Sub SetLayout((Key) As String, sLayout As String)
+
+  FToolBar.SaveLayout(Key, LayoutFromString(sLayout))
+  
+End
+

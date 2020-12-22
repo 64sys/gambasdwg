@@ -1,0 +1,17 @@
+# Gambas Project File 3.0
+Title=Masked window example
+Startup=FOnScreenDisplay
+Icon=icon.png
+Version=3.13.90
+VersionFile=1
+Component=gb.image
+Component=gb.gui
+Environment="GB_GUI=gb.qt5"
+TabSize=2
+Translate=1
+Language=fr
+Maintainer=fabien
+Vendor=Princeton
+Address=fabien@arcalis
+License=General Public Licence
+Packager=1

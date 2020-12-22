@@ -1,0 +1,6 @@
+[Component]
+Key=gb.qt5
+Author=Benoît Minisini
+Implements=Form,EventLoop,ImageIO
+Requires=gb.image
+Type=Form

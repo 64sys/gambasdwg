@@ -1,0 +1,720 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,112,73)
+  Text = ("Project properties")
+  Icon = Picture["icon:/small/edit"]
+  Persistent = True
+  Resizable = False
+  Arrangement = Arrange.Vertical
+  Spacing = True
+  Margin = True
+  { mnuInsertEnv Menu
+    { Menu17 Menu mnuInsertEnv
+      Name = "Menu17"
+      #Translate = False
+      Text = "GB_GUI=gb.qt4"
+      Tag = "GB_GUI=gb.qt4"
+    }
+    { Menu1 Menu mnuInsertEnv
+      Name = "Menu1"
+      #Translate = False
+      Text = "GB_GUI=gb.qt5"
+      Tag = "GB_GUI=gb.qt5"
+    }
+    { Menu2 Menu mnuInsertEnv
+      Name = "Menu2"
+      #Translate = False
+      Text = "GB_GUI=gb.gtk"
+      Tag = "GB_GUI=gb.gtk"
+    }
+    { Menu9 Menu mnuInsertEnv
+      Name = "Menu9"
+      #Translate = False
+      Text = "GB_GUI=gb.gtk3"
+      Tag = "GB_GUI=gb.gtk3"
+    }
+    { Menu20 Menu
+    }
+    { Menu18 Menu mnuInsertEnv
+      Name = "Menu18"
+      #Translate = False
+      Text = "GB_GUI_BUSY=1"
+      Tag = "GB_GUI_BUSY=1"
+    }
+    { Menu19 Menu mnuInsertEnv
+      Name = "Menu19"
+      #Translate = False
+      Text = "GB_X11_INIT_THREADS=1"
+      Tag = "GB_X11_INIT_THREADS=1"
+    }
+    { Menu12 Menu mnuInsertEnv
+      Name = "Menu12"
+      #Translate = False
+      Text = "LIBOVERLAY_SCROLLBAR=0"
+      Tag = "LIBOVERLAY_SCROLLBAR=0"
+    }
+    { Menu10 Menu
+    }
+    { Menu16 Menu mnuInsertEnv
+      Name = "Menu16"
+      #Translate = False
+      Text = "GB_DB_DEBUG=1"
+      Tag = "GB_DB_DEBUG=1"
+    }
+    { Menu13 Menu
+    }
+    { Menu5 Menu mnuInsertEnv
+      Name = "Menu5"
+      #Translate = False
+      Text = "LANGUAGE=C ; LANG=C ; LC_ALL=C"
+      Tag = "LANGUAGE=C,LANG=C,LC_ALL=C"
+    }
+    { Menu8 Menu mnuInsertEnv
+      Name = "Menu8"
+      #Translate = False
+      Text = "GB_REVERSE=1"
+      Tag = "GB_REVERSE=1"
+    }
+    { Menu11 Menu
+    }
+    { Menu3 Menu mnuInsertEnv
+      Name = "Menu3"
+      #Translate = False
+      Text = "GB_STOCK_DEBUG=1"
+      Tag = "GB_STOCK_DEBUG=1"
+    }
+    { Menu15 Menu
+    }
+    { Menu21 Menu mnuInsertEnv
+      Name = "Menu21"
+      #Translate = False
+      Text = "GB_NO_JIT=1"
+      Tag = "GB_NO_JIT=1"
+    }
+    { Menu4 Menu mnuInsertEnv
+      Name = "Menu4"
+      #Translate = False
+      Text = "GB_JIT_DEBUG=1"
+      Tag = "GB_JIT_DEBUG=1"
+    }
+    { Menu14 Menu
+    }
+    { Menu7 Menu mnuInsertEnv
+      Name = "Menu7"
+      #Translate = False
+      Text = "GB_HTTPD_DEBUG=1"
+      Tag = "GB_HTTPD_DEBUG=1"
+    }
+    { Menu6 Menu mnuInsertEnv
+      Name = "Menu6"
+      #Translate = False
+      Text = "GB_HTTPD_PORT=8080"
+      Tag = "GB_HTTPD_PORT=8080"
+    }
+  }
+  { ipnProject IconPanel
+    MoveScaled(1,1,108,66)
+    Expand = True
+    Arrangement = Arrange.Vertical
+    Spacing = True
+    Count = 7
+    Border = True
+    Index = 0
+    Text = ("General")
+    Picture = Picture["icon:/large/gambas"]
+    { Panel4 VBox
+      MoveScaled(0,0,86,65)
+      Expand = True
+      Spacing = True
+      { Panel1 HBox
+        MoveScaled(0,0,84,9)
+        Spacing = True
+        { VBox1 HPanel
+          MoveScaled(0,0,72,9)
+          Expand = True
+          Spacing = True
+          { Label28 Label
+            MoveScaled(0,0,16,4)
+            Font = Font["Bold"]
+            Text = ("Name")
+          }
+          { lblName Label
+            MoveScaled(18,0,24,4)
+            Font = Font["+4,Bold"]
+            Expand = True
+          }
+          { Label29 Label
+            MoveScaled(0,5,16,4)
+            Font = Font["Bold"]
+            Text = ("Location")
+          }
+          { txtPath TextBox
+            MoveScaled(18,5,27,4)
+            Expand = True
+            ReadOnly = True
+          }
+        }
+        { Panel9 VBox
+          MoveScaled(73,0,9,9)
+          { btnIcon ToolButton
+            MoveScaled(0,0,9,9)
+            Border = True
+          }
+        }
+      }
+      { panGeneral HPanel
+        MoveScaled(0,10,84,54)
+        Expand = True
+        Spacing = True
+        { Label16 Label
+          MoveScaled(0,0,16,4)
+          Font = Font["Bold"]
+          Text = ("Type")
+        }
+        { Panel7 Panel
+          MoveScaled(18,0,61,4)
+          { cmbType ComboBox
+            MoveScaled(0,0,32,4)
+            Expand = True
+            ReadOnly = True
+            List = [("Normal"), ("Library"), ("Component")]
+          }
+        }
+        { Label18 Label
+          MoveScaled(0,5,16,4)
+          Font = Font["Bold"]
+          Text = ("Vendor")
+        }
+        { txtVendor MaskBox
+          MoveScaled(18,5,44,4)
+          Expand = True
+          Filter = "[A-Za-z0-9_-]"
+        }
+        { Label10 Label
+          MoveScaled(0,10,16,4)
+          Font = Font["Bold"]
+          Text = ("Version")
+        }
+        { HBox1 HBox
+          MoveScaled(18,10,64,4)
+          Expand = True
+          Spacing = True
+          { txtMajor SpinBox
+            MoveScaled(0,0,9,4)
+            MaxValue = 9999
+          }
+          { txtMinor SpinBox
+            MoveScaled(10,0,9,4)
+            MaxValue = 9999
+          }
+          { txtRelease SpinBox
+            MoveScaled(20,0,12,4)
+            MaxValue = 999999
+          }
+          { chkGetVersionFromFile CheckBox
+            MoveScaled(33,0,24,4)
+            Expand = True
+            Text = ("Get from 'VERSION' file")
+          }
+        }
+        { Label12 Label
+          MoveScaled(0,15,16,4)
+          Font = Font["Bold"]
+          Text = ("Title")
+        }
+        { txtTitle TextBox
+          MoveScaled(18,15,60,4)
+          Expand = True
+        }
+        { Label3 Label
+          MoveScaled(0,19,16,4)
+          Font = Font["Bold"]
+          Text = ("Description")
+        }
+        { txtDesc TextArea
+          MoveScaled(18,20,60,16)
+          Expand = True
+          Wrap = True
+        }
+        { Label11 Label
+          MoveScaled(0,37,16,4)
+          Font = Font["Bold"]
+          Text = ("Authors")
+        }
+        { txtAuthor TextArea
+          MoveScaled(18,37,57,16)
+          Expand = True
+          Wrap = True
+        }
+      }
+    }
+    Index = 1
+    Text = ("Information")
+    Picture = Picture["icon:/large/info"]
+    { Panel5 VBox
+      MoveScaled(2,1,82,65)
+      Expand = True
+      Spacing = True
+      { lblInfo Label
+        MoveScaled(0,0,79,3)
+        Font = Font["Bold"]
+        Text = ("Information")
+      }
+      { HBox15 HBox
+        MoveScaled(0,4,78,4)
+        Spacing = True
+        Indent = True
+        { Label26 Label
+          MoveScaled(0,0,33,4)
+          Text = ("Progress")
+        }
+        { cmbComponentState ComboBox
+          MoveScaled(34,0,32,4)
+          ReadOnly = True
+          List = [("Finished and stable"), ("Not finished but stable"), ("Experimental"), ("Deprecated")]
+        }
+      }
+      { HBox16 HBox
+        MoveScaled(0,9,71,4)
+        Spacing = True
+        Indent = True
+        { Label25 Label
+          MoveScaled(0,0,33,4)
+          Text = ("This component is hidden")
+        }
+        { btnHidden SwitchButton
+          MoveScaled(34,0,8,4)
+          Animated = True
+        }
+      }
+      { panCompatible HBox
+        MoveScaled(0,14,71,4)
+        Spacing = True
+        Indent = True
+        { chkCompat CheckBox
+          MoveScaled(0,0,33,4)
+          Text = ("Compatible until version")
+        }
+        { txtCompMajor SpinBox
+          MoveScaled(34,0,9,4)
+          Enabled = False
+          MaxValue = 9999
+        }
+        { txtCompMinor SpinBox
+          MoveScaled(44,0,9,4)
+          Enabled = False
+          MaxValue = 9999
+        }
+        { txtCompRelease SpinBox
+          MoveScaled(54,0,12,4)
+          Enabled = False
+          MaxValue = 999999
+        }
+      }
+      { HBox14 HBox
+        MoveScaled(0,19,71,4)
+        Spacing = True
+        Indent = True
+        { Label13 Label
+          MoveScaled(0,0,33,4)
+          Text = ("Include information from")
+        }
+        { txtIncludeInfo TextBox
+          MoveScaled(34,0,19,4)
+          Expand = True
+        }
+      }
+      { Label15 Label
+        MoveScaled(0,24,79,3)
+        Font = Font["Bold"]
+        Text = ("Required features")
+      }
+      { HBox7 HBox
+        MoveScaled(0,28,75,12)
+        Indent = True
+        { panNeed Panel
+          MoveScaled(1,0,37,12)
+          Expand = True
+          Arrangement = Arrange.Vertical
+          { CheckBox5 CheckBox
+            MoveScaled(0,0,36,4)
+            Tag = "Form"
+            Text = ("Graphical form management")
+          }
+          { CheckBox6 CheckBox
+            MoveScaled(0,4,36,4)
+            Tag = "EventLoop"
+            Text = ("Event loop management")
+          }
+          { CheckBox7 CheckBox
+            MoveScaled(0,8,36,4)
+            Tag = "ImageIO"
+            Text = ("Image loading and saving")
+          }
+        }
+        { panNeed2 VBox
+          MoveScaled(39,0,30,12)
+          Expand = True
+          { CheckBox8 CheckBox
+            MoveScaled(0,0,29,4)
+            Tag = "OpenGLViewer"
+            Text = ("OpenGL display")
+          }
+          { CheckBox1 CheckBox
+            MoveScaled(0,4,29,4)
+            Tag = "XML"
+            Text = ("XML management")
+          }
+        }
+      }
+      { Panel12 HBox
+        MoveScaled(0,41,80,3)
+        { Label14 Label
+          MoveScaled(0,0,35,3)
+          Font = Font["Bold"]
+          Expand = True
+          Text = ("Required and excluded components")
+        }
+      }
+      { HBox10 HBox
+        MoveScaled(0,45,81,18)
+        Expand = True
+        Spacing = True
+        { lvwRequire ListView
+          MoveScaled(1,1,47,16)
+          Expand = True
+          Sorted = True
+        }
+        { VBox5 VBox
+          MoveScaled(59,1,20,17)
+          Spacing = True
+          { btnAddRequire Button
+            MoveScaled(0,0,16,4)
+            Text = ("Require") & "..."
+            Picture = Picture["icon:/small/ok"]
+          }
+          { btnAddExclude Button
+            MoveScaled(0,4,16,4)
+            Text = ("Exclude") & "..."
+            Picture = Picture["icon:/small/close"]
+          }
+          { btnRemove Button
+            MoveScaled(0,8,17,4)
+            Text = Shortcut(("Remove"), "R")
+            Picture = Picture["icon:/small/remove"]
+          }
+          { btnRemoveAll Button
+            MoveScaled(0,12,17,4)
+            Text = ("Remove All")
+            Picture = Picture["icon:/small/trash"]
+          }
+        }
+      }
+    }
+    Index = 2
+    Text = ("Components")
+    Picture = Picture["icon:/large/component"]
+    { choComponent ComponentChooser
+      MoveScaled(6,9,67,37)
+      Expand = True
+    }
+    Index = 3
+    Text = ("Libraries")
+    Picture = Picture["icon:/large/plugin"]
+    { Panel13 VBox
+      MoveScaled(1,1,85.75,63.875)
+      Expand = True
+      Spacing = True
+      { Label9 Label
+        MoveScaled(0,0,26,3)
+        Font = Font["Bold"]
+        Text = ("Libraries")
+      }
+      { Label17 Label
+        MoveScaled(1,4,60,4)
+        Visible = False
+        AutoResize = True
+        Text = ("Runtime library search path")
+      }
+      { txtLibraryPath TextBox
+        MoveScaled(1,8,24,4)
+        Visible = False
+      }
+      { Panel2 Panel
+        MoveScaled(0,14,84.875,20.875)
+        Expand = True
+        Arrangement = Arrange.Vertical
+        Border = Border.Plain
+        { gvwLibrary GridView
+          MoveScaled(1,0,59,14)
+          Expand = True
+          Border = False
+          Mode = Select.Single
+          Grid = False
+        }
+        { Separator1 Separator
+          MoveScaled(56,14,12,0)
+        }
+        { HBox18 HBox
+          MoveScaled(0,16,84,4)
+          Background = Color.TextBackground
+          { btnInsertLib ToolButton
+            MoveScaled(0,0,17,4)
+            AutoResize = True
+            Text = Shortcut(("Add"), "A") & "..."
+            Picture = Picture["icon:/small/add"]
+          }
+          { btnRemoveLib ToolButton
+            MoveScaled(18,0,17,4)
+            Enabled = False
+            AutoResize = True
+            Text = Shortcut(("Remove"), "R")
+            Picture = Picture["icon:/small/remove"]
+          }
+          { btnMoveUpLib ToolButton
+            MoveScaled(36,0,4,4)
+            Enabled = False
+            Picture = Picture["icon:/small/up"]
+          }
+          { btnMoveDownLib ToolButton
+            MoveScaled(43,0,4,4)
+            Enabled = False
+            Picture = Picture["icon:/small/down"]
+          }
+        }
+      }
+      { Label6 Label
+        MoveScaled(0,39,29,3)
+        Font = Font["Bold"]
+        Text = ("Additional references")
+      }
+      { lstReferences ListEditor
+        MoveScaled(0,43,79,20)
+        Expand = True
+        ReadOnly = True
+        Unique = True
+      }
+    }
+    Index = 4
+    Text = ("Environment")
+    Picture = Picture["icon:/large/attach"]
+    { Panel3 Panel
+      MoveScaled(9,9,69,42)
+      Expand = True
+      Arrangement = Arrange.Vertical
+      Border = Border.Plain
+      { tvwEnv TableView
+        MoveScaled(0,0,68,20)
+        Expand = True
+        Border = False
+        Padding = 4
+        Header = GridView.Horizontal
+      }
+      { Separator2 Separator
+        MoveScaled(28,24,15,0)
+      }
+      { HBox3 HBox
+        MoveScaled(1,34,64,4)
+        Background = Color.TextBackground
+        { btnInsertEnv MenuButton
+          MoveScaled(0,0,19,4)
+          AutoResize = True
+          Text = ("&Add")
+          Picture = Picture["icon:/small/add"]
+          Border = False
+          Menu = "mnuInsertEnv"
+        }
+        { btnRemoveEnv ToolButton
+          MoveScaled(20,0,17,4)
+          AutoResize = True
+          Text = Shortcut(("Remove"), "R")
+          Picture = Picture["icon:/small/remove"]
+        }
+      }
+    }
+    Index = 5
+    Text = ("Options")
+    Picture = Picture["icon:/large/options"]
+    { Panel6 VBox
+      MoveScaled(1,2,86,60)
+      Expand = True
+      Spacing = True
+      { Label7 Label
+        MoveScaled(0,0,84,3)
+        Font = Font["Bold"]
+        Text = ("Edition")
+        Alignment = Align.BottomNormal
+      }
+      { HBox13 HBox
+        MoveScaled(1,4,83,4)
+        Spacing = True
+        Indent = True
+        { Label1 Label
+          MoveScaled(0,0,46,4)
+          Text = ("Tab size")
+        }
+        { txtTabSize SpinBox
+          MoveScaled(47,0,8,4)
+          MinValue = 1
+          MaxValue = 16
+          Value = 2
+        }
+        { Label5 Label
+          MoveScaled(59,0,22,4)
+          Text = ("space(s)")
+        }
+      }
+      { HBox4 HBox
+        MoveScaled(1,9,83,4)
+        Spacing = True
+        Indent = True
+        { Label2 Label
+          MoveScaled(0,0,46,4)
+          Text = ("Show deprecated components and controls")
+        }
+        { btnShowDeprecated SwitchButton
+          MoveScaled(47,0,8,4)
+          Animated = True
+        }
+      }
+      { Label8 Label
+        MoveScaled(0,14,84,3)
+        Font = Font["Bold"]
+        Text = ("Compilation")
+        Alignment = Align.BottomNormal
+      }
+      { HBox12 HBox
+        MoveScaled(1,18,83,4)
+        Spacing = True
+        Indent = True
+        { Label21 Label
+          MoveScaled(0,0,46,4)
+          Text = ("Module symbols are public by default")
+        }
+        { btnModulePublic SwitchButton
+          MoveScaled(47,0,8,4)
+          Animated = True
+        }
+      }
+      { HBox11 HBox
+        MoveScaled(1,23,83,4)
+        Spacing = True
+        Indent = True
+        { Label22 Label
+          MoveScaled(0,0,46,4)
+          Text = ("Form controls are public")
+        }
+        { btnControlPublic SwitchButton
+          MoveScaled(47,0,8,4)
+          Animated = True
+        }
+      }
+      { HBox5 HBox
+        MoveScaled(1,28,83,4)
+        Spacing = True
+        Indent = True
+        { Label4 Label
+          MoveScaled(0,0,46,4)
+          Text = ("Activate warnings")
+        }
+        { btnWarning SwitchButton
+          MoveScaled(47,0,8,4)
+          Animated = True
+        }
+      }
+      { Label19 Label
+        MoveScaled(0,33,84,3)
+        Font = Font["Bold"]
+        Text = ("Translation")
+        Alignment = Align.BottomNormal
+      }
+      { HBox9 HBox
+        MoveScaled(1,37,83,4)
+        Spacing = True
+        Indent = True
+        { Label24 Label
+          MoveScaled(0,0,46,4)
+          Text = ("Project is translatable")
+        }
+        { btnTranslate SwitchButton
+          MoveScaled(47,0,8,4)
+          Animated = True
+        }
+      }
+      { HBox8 HBox
+        MoveScaled(1,42,83,4)
+        Spacing = True
+        Indent = True
+        { Label20 Label
+          MoveScaled(0,0,46,4)
+          Text = ("Default language")
+        }
+        { cmbDefaultLanguage ComboBox
+          MoveScaled(47,0,36,4)
+          Expand = True
+          ReadOnly = True
+          Sorted = True
+        }
+      }
+      { Label27 Label
+        MoveScaled(0,47,84,3)
+        Font = Font["Bold"]
+        Text = ("Version control")
+        Alignment = Align.BottomNormal
+      }
+      { HBox6 HBox
+        MoveScaled(1,52,83,4)
+        Spacing = True
+        Indent = True
+        { Label23 Label
+          MoveScaled(0,0,46,4)
+          Text = ("Add branch to version number")
+        }
+        { btnVersionAddBranch SwitchButton
+          MoveScaled(47,0,8,4)
+          Animated = True
+        }
+      }
+    }
+    Index = 6
+    Text = ("Statistics")
+    Picture = Picture["icon:/large/monitor"]
+    { gvwStat GridView
+      MoveScaled(3,4,62,25)
+      Expand = True
+      Grid = False
+      Padding = 4
+    }
+    { gvwVcInfo GridView
+      MoveScaled(4,35,62,25)
+      Expand = True
+      Padding = 4
+    }
+    Index = 0
+  }
+  { Panel10 HBox
+    MoveScaled(12,68,83,4)
+    Spacing = True
+    { Panel11 Panel
+      MoveScaled(0,1,14,3)
+      Expand = True
+    }
+    { btnReset Button
+      MoveScaled(19,0,17,4)
+      Visible = False
+      Text = Shortcut(("Reset"), "R")
+      Picture = Picture["icon:/small/undo"]
+    }
+    { btnOK Button
+      MoveScaled(37,0,17,4)
+      Text = ("OK")
+      Default = True
+    }
+    { btnCancel Button
+      MoveScaled(55,0,18,4)
+      Text = ("Cancel")
+      Cancel = True
+    }
+  }
+}

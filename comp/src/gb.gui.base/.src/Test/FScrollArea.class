@@ -1,0 +1,45 @@
+' Gambas class file
+
+Public Sub Form_Open()
+
+  Print System.RightToLeft
+  Print Style.ScrollbarSize
+  Print Style.ScrollbarSpacing
+  
+  Application.Animations = True
+  MyScrollView1.Shadow = True
+  'ScrollArea1.ResizeContents(1600, 1600)
+
+End
+
+Public Sub ScrollArea1_Draw()
+
+  Debug ScrollArea1.ScrollX;; ScrollArea1.ScrollY
+  Draw.Translate(-ScrollArea1.ScrollX, -ScrollArea1.ScrollY)
+  Draw.Fillstyle = Fill.Dense6
+  Draw.FillColor = Color.Red
+  'Draw.Transparent = True
+  'Draw.Ellipse(55, 78, 190, 300)
+  Draw.Ellipse(0, 0, 1600, 1600)
+
+End
+
+Public Sub Button1_Click()
+
+  Label1.Delete
+
+End
+
+Public Sub MyScrollView1_Draw()
+
+  Paint.Font.Grade = 20
+  Paint.DrawText("Gambas !", 20, 200)
+
+End
+
+
+Public Sub Button_Click()
+
+  Print Last.Parent
+
+End

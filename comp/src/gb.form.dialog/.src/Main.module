@@ -1,0 +1,15 @@
+' Gambas module file
+
+Public Sub Main()
+
+  Dialog.Title = "Commit"
+  ' Dialog.Filter = ["*.tar.gz", "Archive files", "*.png", "PNG files", "*.jpg;*.jpeg", "JPEG files", "*.bmp", "BMP files"]
+  ' Dialog.AutoExt = True
+  ' If Dialog.SaveFile() Then Return
+  ' Print Dialog.Path
+  Dialog.Key = "test"
+  Dialog.NoUser = True
+  Dialog.AskPassword()
+  
+End
+

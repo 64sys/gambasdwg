@@ -1,0 +1,149 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,71,104)
+  Font = Font["Bitstream Vera Sans"]
+  Icon = Picture["camera.png"]
+  Border = False
+  { outer Panel
+    MoveScaled(3.4286,1.7143,64,95.1429)
+    Background = &HBFFFFF&
+    Foreground = &H000000&
+    Border = Border.Sunken
+    { container Panel
+      MoveScaled(5.1429,2.5714,53.7143,34.2857)
+      Background = Color.Background
+      Border = Border.Sunken
+      { pic PictureBox
+        MoveScaled(6,10.2857,26.5714,20.5714)
+        Alignment = Align.Center
+      }
+      { title Panel
+        MoveScaled(1.7143,0.8571,34.2857,4.5714)
+        Background = Color.ButtonForeground
+        { devName Label
+          MoveScaled(6,0,26.5714,2.5714)
+          Font = Font["Bitstream Vera Sans Mono,-1"]
+          Foreground = Color.TextBackground
+          Text = ("devName")
+          Alignment = Align.Left
+        }
+        { currentTime Label
+          MoveScaled(6,2,24.8571,2)
+          Font = Font["Bitstream Vera Sans Mono,-2"]
+          Background = Color.Foreground
+          Foreground = Color.TextBackground
+          Text = ("currentTime")
+          Alignment = Align.Left
+        }
+        { buttonSettings Button
+          MoveScaled(0.5714,0.5714,4.2857,3.4286)
+          Picture = Picture["settings.png"]
+        }
+      }
+    }
+    { Refresh #Timer
+      #MoveScaled(32,25)
+    }
+    { tools Panel
+      MoveScaled(3,40,53.7143,38.5714)
+      Visible = False
+      Font = Font["-1"]
+      Background = Color.Background
+      Border = Border.Sunken
+      { Label1 Label
+        MoveScaled(2,2,13,3)
+        Text = ("Picture Size")
+      }
+      { picture_size ComboBox
+        MoveScaled(16,1,17,4)
+        ReadOnly = True
+        List = [("160 x 120"), ("320 x 240"), ("640 x 480")]
+        Text = ("320 x 240")
+      }
+      { slider_bright Slider
+        MoveScaled(16,5,16,3.5714)
+      }
+      { Label2 Label
+        MoveScaled(2,5,13,3)
+        Text = ("Brightness")
+      }
+      { slider_contrast Slider
+        MoveScaled(16,8,16,3.5714)
+      }
+      { Label3 Label
+        MoveScaled(2,8,13,3)
+        Text = ("Contrast")
+      }
+      { slider_colour Slider
+        MoveScaled(16,11,16,3.5714)
+      }
+      { Label4 Label
+        MoveScaled(2,11,13,3)
+        Text = ("Colour")
+      }
+      { slider_hue Slider
+        MoveScaled(16,14,16,3.5714)
+      }
+      { Label5 Label
+        MoveScaled(2,14,13,3)
+        Text = ("Hue")
+      }
+      { slider_whiteness Slider
+        MoveScaled(16,17,16,3.5714)
+      }
+      { Label6 Label
+        MoveScaled(2,17,13,3)
+        Text = ("Whiteness")
+      }
+      { button_hide Button
+        MoveScaled(0,27,10,4)
+        Text = ("&Hide")
+        Picture = Picture["icon:/16/apply"]
+      }
+      { button_close Button
+        MoveScaled(0,32,10,4)
+        Text = ("&Close")
+        Picture = Picture["icon:/16/close"]
+      }
+      { Label7 Label
+        MoveScaled(2,20,13,3)
+        Text = ("Refresh Rate")
+      }
+      { refrate Slider
+        MoveScaled(16,20,16,3.5714)
+        MinValue = 20
+        MaxValue = 1999
+        Value = 200
+      }
+      { button_pause Button
+        MoveScaled(11,27,10,4)
+        Text = ("&Pause")
+        Picture = Picture["icon:/16/pause"]
+      }
+      { button_play Button
+        MoveScaled(11,27,10,4)
+        Visible = False
+        Text = ("&Play")
+        Picture = Picture["icon:/16/play"]
+      }
+      { button_snap Button
+        MoveScaled(11,32,10,4)
+        Text = ("&Snap")
+        Picture = Picture["icon:/16/camera"]
+      }
+      { frame_rate Label
+        MoveScaled(2,23,30,3)
+        Font = Font["-1"]
+        Foreground = Color.SelectedBackground
+        Text = ("0.00 fps")
+      }
+      { button_reset Button
+        MoveScaled(22,27,10,4)
+        Text = ("&Reset")
+        Picture = Picture["icon:/16/apply"]
+        Default = True
+      }
+    }
+  }
+}

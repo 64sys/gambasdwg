@@ -1,0 +1,7 @@
+[Component]
+Key=gb.term.form
+Version=3.14.90
+State=2
+Authors=Fabien Bodard (gambas.fr@gmail.com)
+Needs=ImageIO
+Requires=gb.term

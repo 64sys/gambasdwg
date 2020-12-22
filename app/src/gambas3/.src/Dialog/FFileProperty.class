@@ -1,0 +1,96 @@
+' Gambas class file
+
+Class DesktopMime
+
+Static Private $sPath As String
+
+'Private $bStat As Boolean
+
+Public Sub Run(sPath As String) As Boolean
+  
+  $sPath = sPath
+  Return Not FFileProperty.ShowModal()
+  
+End
+
+Public Sub fprInfo_Data()
+ 
+  Dim sPath As String = fprInfo.Path
+  Dim hModule As CModule
+  Dim sType As String
+  
+  If Project.IsSourcePath(sPath) Then
+
+    Try fprInfo.Data.Icon = Project.GetFileIcon(sPath, 64)
+
+    hModule = CModule.FromExt(File.Ext(sPath))
+      
+    If hModule Then
+        
+      sType = Subst(("Gambas &1"), hModule.Name)
+        
+    Else
+    
+      Select Case File.Ext(sPath)
+        
+        Case "module"
+          sType = ("Gambas module")
+        Case "test"
+          sType = ("Gambas test module")
+        Case "class"
+          sType = ("Gambas class")
+          
+      End Select
+          
+    Endif
+    
+    If sType Then
+      fprInfo.Data.Type = sType
+      Return
+    Endif
+    
+  Endif
+  
+  Stop Event
+  
+End
+
+' Private Sub AddStat(sName As String, sValue As String)
+'   
+'   Dim N As Integer = gvwStat.Rows.Count
+'   
+'   Inc gvwStat.Rows.Count
+'   gvwStat[N, 0].Text = sName
+'   gvwStat[N, 0].Foreground = Color.Merge(Color.Foreground, Color.LightForeground)
+'   gvwStat[N, 1].Text = sValue
+'   
+' End
+
+
+Public Sub Form_Open()
+
+  Dim sPath As String
+
+  sPath = $sPath
+
+  If Left(sPath) = "$" Then sPath = Project.GetSpecialDir(sPath)
+  If Not sPath Then sPath = Project.Dir
+ 
+  fprInfo.Path = sPath
+ 
+  Me.Title = Subst(("'&1' properties"), File.Name(sPath))
+  
+  ' If (sPath &/ "/") = (Project.SourceDir &/ "/") Then    
+  '   fprInfo.Add(panStat, ("Statistics"))
+  ' Endif
+  
+  btnClose.SetFocus
+  
+End
+
+Public Sub btnClose_Click()
+
+  Me.Close
+
+End
+

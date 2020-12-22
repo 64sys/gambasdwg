@@ -1,0 +1,204 @@
+' Gambas class file
+
+Static Private $aPositions As New CPosition[]
+Static Private $iCurrent As Integer
+Static Private $iDisable As Integer
+
+Private Const MAX_POS As Integer = 40
+
+Public Path As String
+Public Method As String
+Public (Line) As Integer
+Public Column As Integer
+
+Static Public Sub Clear()
+  
+  $aPositions.Clear
+  $iCurrent = -1
+  $iDisable = 0
+  UpdatePosition
+  
+End
+
+Static Private Sub UpdatePosition()
+  
+  FMain.UpdatePosition($iCurrent > 0, $iCurrent < $aPositions.Max)
+  
+End
+
+Static Private Sub AddPosition(hPos As CPosition)
+  
+  If $iCurrent >= 0 Then
+    If $aPositions[$iCurrent].IsEqual(hPos) Then Return
+  Endif
+  
+  If $iCurrent >= MAX_POS Then
+    $aPositions.Remove(0)
+    Dec $iCurrent
+  Endif
+
+  Inc $iCurrent
+  $aPositions.Resize($iCurrent)
+  $aPositions.Add(hPos)
+  
+End
+
+
+Static Public Sub SaveCurrent(hForm As Object, Optional bForce As Boolean)
+
+  Dim hEditor As TextEditor
+  Dim hPos As CPosition
+
+  If $iDisable Then Return
+  If Not hForm Then Return
+  If hForm <> Project.ActiveForm Then Return
+
+  hPos = New CPosition
+  With hForm
+    hPos.Path = .Path
+    Try hEditor = hForm.GetEditor()
+    If hEditor Then
+      
+      If Not bForce Then
+        If Abs(hEditor.Line - hEditor.LastLine) <= 1 Then Return
+      Endif
+      
+      hPos.Line = hEditor.LastLine
+      hPos.Column = hEditor.LastColumn
+      Try hPos.Method = hForm.GetProcAt(hPos.LastLine)
+      AddPosition(hPos)
+      
+      hPos = hPos.Copy()
+      
+      hPos.Line = hEditor.Line
+      hPos.Column = hEditor.Column
+      Try hPos.Method = hForm.GetProcAt(hPos.Line)
+      AddPosition(hPos)
+      
+    Else
+      
+      hPos.Line = -1
+      hPos.Column = -1
+      AddPosition(hPos)
+      
+    Endif
+    
+  End With
+  
+  UpdatePosition
+  
+End
+
+Static Public Sub MovePrevious()
+  
+  If $iCurrent <= 0 Then Return
+  
+  Dec $iCurrent
+  $aPositions[$iCurrent].Move()
+  UpdatePosition
+  
+End
+
+Static Public Sub MoveNext()
+  
+  If $iCurrent >= $aPositions.Max Then Return
+  
+  Inc $iCurrent
+  $aPositions[$iCurrent].Move
+  UpdatePosition
+  
+End
+
+Public Sub IsEqual(hPos As CPosition) As Boolean
+  
+  If Path = hPos.Path And If {Line} = hPos.Line Then Return True 'And If Column = hPos.Column Then Return True
+  
+End
+
+Public Sub IsNear(hPos As CPosition) As Boolean
+  
+  If Abs({Line} - hPos.Line) <= 1 Then Return Path = hPos.Path 
+  
+End
+
+Public Sub Move()
+  
+  Dim hForm As Object
+  
+  Inc $iDisable
+  Try hForm = Project.OpenFile(Path)
+  If hForm And If {Line} >= 0 Then hForm.Goto({Line}, Column)
+  Dec $iDisable
+  
+End
+
+Static Public Sub Disable()
+  
+  Inc $iDisable
+  
+End
+
+Static Public Sub Enable()
+  
+  If $iDisable <= 0 Then Return
+  Dec $iDisable
+  
+End
+
+Public Sub GetDesc() As String
+  
+  Dim sDesc As String
+  
+  sDesc = File.BaseName(Path)
+  If Method Then sDesc &= "." & Method
+  If {Line} >= 0 Then sDesc &= "." & CStr({Line} + 1)
+  
+  Return sDesc
+  
+End
+
+
+Static Public Sub FillMenu(mnuParent As Menu)
+  
+  Dim I As Integer
+  Dim hMenu As Menu
+  
+  mnuParent.Children.Clear
+  
+  For I = $aPositions.Max DownTo 0
+    hMenu = New Menu(mnuParent) As "mnuBackward"
+    With $aPositions[I]
+      hMenu.Text = .GetDesc()
+      hMenu.Picture = Project.GetFileIcon(.Path)
+      hMenu.Tag = I
+      If I = $iCurrent Then hMenu.Checked = True
+    End With
+  Next
+  
+End
+
+Static Public Sub mnuBackward_Click()
+  
+  Dim I As Integer = Last.Tag
+  
+  $aPositions[I].Move
+  $iCurrent = I
+  UpdatePosition
+  
+End
+
+Public Sub Copy() As CPosition
+
+  Dim hPos As CPosition
+  
+  hPos = New CPosition
+  With hPos
+    .Path = Path
+    .Method = Method
+    .Line = {Line}
+    .Column = Column
+  End With
+  
+  Return hPos
+  
+End

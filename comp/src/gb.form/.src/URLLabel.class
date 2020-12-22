@@ -1,0 +1,131 @@
+' Gambas class file
+
+Export
+
+Inherits Label
+
+Public Const _Properties As String = "*,Link"
+'Public Const _DefaultSize As String = "24,4"
+Public Const _DefaultEvent As String = "Click"
+
+Event Click
+
+Property Link As String
+Property Visited As Boolean
+Property Foreground As Integer
+Property Text As String
+
+Private $bVisited As Boolean
+Private $sText As String
+Private $sLink As String
+Private $iMouse As Integer
+
+Private $hObs As Observer
+
+Public Sub _new()
+  
+  $hObs = New Observer(Me) As "Label"
+  UpdateLabel
+  
+End
+
+Private Function Visited_Read() As Boolean
+
+  Return $bVisited
+
+End
+
+Private Sub UpdateLabel()
+
+  Super.Foreground = If($bVisited, Color.VisitedForeground, Color.LinkForeground)
+  If $sText Then
+    Super.Text = $sText
+  Else 
+    Super.Text = $sLink
+  Endif
+
+End
+
+Private Sub Visited_Write(Value As Boolean)
+
+  $bVisited = Value
+  UpdateLabel
+
+End
+
+Public Sub Label_Enter()
+  
+  $iMouse = Me.Mouse
+  
+  If Not Me.Design And If Me.Enabled Then Me.Mouse = Mouse.Pointing
+  
+End
+
+Public Sub Label_Leave()
+  
+  Me.Mouse = $iMouse
+  
+End
+
+Public Sub Label_MouseDown()
+
+  Dim bStop As Boolean
+  Dim sLink As String
+  
+  If Me.Design Then Return
+  If Not Me.Enabled Then Return
+  
+  bStop = Raise Click
+  If bStop Then Return
+  
+  $bVisited = True
+  UpdateLabel
+  
+  sLink = $sLink
+  If Not sLink Then sLink = $sText
+  
+  If sLink Like "*://*" And If Component.IsLoaded("gb.desktop") Then
+    Desktop.Open(sLink)
+  Endif
+  
+End
+
+Private Function Link_Read() As String
+
+  Return $sLink
+
+End
+
+Private Sub Link_Write(Value As String)
+
+  If Me.Tooltip = $sLink Then Me.Tooltip = Value
+  $sLink = Value
+  UpdateLabel
+
+End
+
+
+Private Function Foreground_Read() As Integer
+
+  Return Super.Foreground
+
+End
+
+Private Sub Foreground_Write((Value) As Integer)
+
+  ' Ignore explicit foreground 
+
+End
+
+Private Function Text_Read() As String
+
+  Return $sText
+
+End
+
+Private Sub Text_Write(Value As String)
+
+  $sText = Value
+  UpdateLabel
+
+End

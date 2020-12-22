@@ -1,0 +1,170 @@
+' Gambas class file
+
+Export
+
+Inherits UserControl
+
+Public Const _Properties As String = "*,List,Border=True,Moveable=True,ReadOnly,Unique"
+Public Const _DefaultSize As String = "24,32"
+Public Const _Similar As String = "ListBox"
+Public Const _Group As String = "View"
+
+Property List As String[]
+Property Border As Boolean
+Property Text As String
+Property Moveable As Boolean
+Property ReadOnly As Boolean
+Property Read Editor As Control
+Property Unique As Boolean
+Property Index As Integer
+
+Event Select
+Event Change
+Event Add
+Event Activate
+
+Private $hForm As FListEditor
+
+Public Sub _new()
+  
+  $hForm = New FListEditor(Me)
+  
+End
+
+Private Function Border_Read() As Boolean
+
+  Return $hForm.GetBorder()
+
+End
+
+Private Sub Border_Write(Value As Boolean)
+
+  $hForm.SetBorder(Value)
+
+End
+
+Private Function List_Read() As String[]
+
+  Return $hForm.GetList()
+
+End
+
+Private Sub List_Write(Value As String[])
+
+  $hForm.SetList(Value)
+
+End
+
+Public Sub _RaiseSelect()
+  
+  Raise Select
+  
+End
+
+Public Sub _RaiseChange()
+  
+  Raise Change
+  
+End
+
+Private Function Text_Read() As String
+
+  Return $hForm.GetText()
+
+End
+
+Private Sub Text_Write(Value As String)
+
+  $hForm.SetText(Value)
+
+End
+
+Private Function Moveable_Read() As Boolean
+
+  Return $hForm.GetMoveable()
+
+End
+
+Private Sub Moveable_Write(Value As Boolean)
+
+  $hForm.SetMoveable(Value)
+
+End
+
+Private Function Editor_Read() As Control
+
+  Return $hForm.GetEditor()
+
+End
+
+Private Function ReadOnly_Read() As Boolean
+
+  Return $hForm.IsReadOnly()
+
+End
+
+Private Sub ReadOnly_Write(Value As Boolean)
+
+  $hForm.SetReadOnly(Value)
+
+End
+
+Public Sub _RaiseAdd()
+  
+  Raise Add
+  
+End
+
+Public Sub Add(Text As String)
+  
+  $hForm.Add(Text)
+  
+End
+
+Public Sub Remove(Index As Integer, Optional Length As Integer = 1)
+  
+  $hForm.Remove(Index, Length)
+  
+End
+
+Public Sub _RaiseActivate()
+  
+  Raise Activate
+  
+End
+
+Public Sub Clear()
+  
+  $hForm.Clear
+  
+End
+
+Private Function Unique_Read() As Boolean
+
+  Return $hForm.IsUnique()
+
+End
+
+Private Sub Unique_Write(Value As Boolean)
+
+  $hForm.SetUnique(Value)
+
+End
+
+Private Function Index_Read() As Integer
+
+  Return $hForm.GetIndex()
+
+End
+
+Private Sub Index_Write(Value As Integer)
+
+  $hForm.SetIndex(Value)
+
+End
+
+Public Sub Find(Text As String, Optional Mode As Integer) As Integer
+  
+  Return $hForm.Find(Text, Mode)
+  
+End

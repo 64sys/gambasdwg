@@ -1,0 +1,17 @@
+# Gambas Project File 3.0
+Title=DeepSpace
+Description="DeepSpace Vector Engine"
+Startup=MMain
+Icon=images/deepspace.png
+Version=3.11.90
+VersionFile=1
+Component=gb.image
+Component=gb.gui
+TabSize=4
+Translate=1
+Language=fr
+Maintainer=benoit
+Vendor=Princeton
+Address=benoit@localhost
+License=General Public Licence
+Packager=1

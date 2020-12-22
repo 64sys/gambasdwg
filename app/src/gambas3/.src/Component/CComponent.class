@@ -1,0 +1,673 @@
+' Gambas class file
+
+' Static Public All As New Collection
+' Static Public Libraries As New String[]
+' Static Public (Classes) As Collection
+
+Static Private $iKey As Integer
+Static Private $hUnknown As CComponent
+Static Private $aGuiComp As String[] = ["gb.gui", "gb.qt4", "gb.qt5", "gb.gtk", "gb.gtk3"]
+
+Public Const PROJECT_NAME As String = "$"
+
+Public Const STABLE As Integer = 0
+Public Const STABLE_NOT_FINISHED As Integer = 1
+Public Const UNSTABLE As Integer = 2
+Public Const DEPRECATED As Integer = 3
+Public Const UNKNOWN As Integer = 4
+
+Public Documentation As CDocumentation
+Public (Key) As String
+Public Name As String
+Public Authors As New String[]
+'Public Type As String
+Public Hiddens As New String[]
+Public Controls As New String[]
+'Public Containers As New String[]
+'Public MultiContainers As New String[]
+'Public Virtuals As New String[]
+Public Require As New String[]
+Public Exclude As New String[]
+Public Implement As New String[]
+Public Need As New String[]
+Public Loaded As Boolean
+Public ClassList As New String[]
+Public State As Integer
+Public SortKey As Integer
+'Public User As Boolean
+Public Version As String
+Public Family As String
+Public ThirdParty As Boolean
+Public Hidden As Boolean
+
+Public {Library} As Boolean
+Public Path As String
+Public Help As String
+
+Private $bCalcKey As Boolean
+
+Public Sub CalcSortKey()
+  
+  Dim sComp As String
+  Dim sNeed As String
+  Dim hComp As CComponent
+  
+  If SortKey = 0 Then 
+    
+    If $bCalcKey Then Return
+    
+    $bCalcKey = True
+    
+    If Require.Count Or If Need.Count Then
+      
+      For Each sComp In Require
+        hComp = Documentation[sComp]
+        If Not hComp Then Continue
+        If hComp <> Me Then hComp.CalcSortKey
+      Next
+      
+      For Each sNeed In Need
+        For Each hComp In Documentation.Components
+          If hComp.Implement.Find(sNeed) >= 0 Then
+            hComp.CalcSortKey
+          Endif
+        Next
+      Next
+      
+    Endif
+    
+    Inc $iKey
+    SortKey = $iKey
+    'DEBUG Key;; "=";; SortKey
+    
+    $bCalcKey = False
+    
+  Endif
+  
+End
+
+Static Public Sub GetInfoDir() As String
+  
+  Return System.Path &/ "share/" & "gambas" & System.Version & "/info"
+  
+End
+
+Private Sub FindInfo(sKey As String) As String
+
+  Dim sComp As String
+  Dim aComp As String[]
+  Dim sPath As String
+  Dim aKey As String[]
+  
+  sPath = GetInfoDir() &/ sKey & ".info"
+  If Exist(sPath) Then Return sPath
+  
+  aKey = Split(sKey, ".")
+  If $aGuiComp.Exist(aKey[0] & "." & aKey[1]) Then
+    
+    For Each sComp In $aGuiComp
+      aComp = Split(sComp, ".")
+      aKey[1] = aComp[1]
+      sPath = GetInfoDir() &/ aKey.Join(".") & ".info" 
+      If Exist(sPath) Then Return sPath
+    Next
+    
+  Endif
+  
+  Error "gambas3: warning: cannot find information file for "; sKey
+
+End
+
+Public Sub Load()
+  
+  Dim aLine As String[]
+  Dim sClass As String
+  Dim sSymbol As String
+  Dim sLig As String
+  Dim iPos As Integer
+  Dim hClass As CClassInfo
+  Dim hParent As CClassInfo
+  Dim hSym As CSymbolInfo
+  Dim sParent As String
+  Dim sPath As String
+  Dim bAgain As Boolean
+  Dim bNextClass As Boolean
+  Dim cClass As New Collection
+  Dim aList As String[]
+  Dim hLibraryInfo As CLibraryInfo
+  Dim sErr As String
+  Dim iLine As Integer
+  Dim sHelp As String
+  Dim cCycle As Collection
+  Dim cClasses As Collection
+  
+  If Loaded Then Return
+  Loaded = True
+  
+  'Debug "Loading: "; Key;; "("; Documentation.Name; ")"
+  Project.SetMessage(Subst(("Loading information on component &1..."), Key))
+  
+  'If Key = Project.Name Then Goto HAS_BEEN_LOADED
+  
+  ClassList = New String[]
+  Controls = New String[]
+  
+  cClasses = Documentation.Classes
+  
+  If {Library} Then
+    
+    hLibraryInfo = CLibraryInfo[Path]
+    hLibraryInfo.GetInfo()
+    sPath = Temp$()
+    File.Save(sPath, hLibraryInfo.Info)
+    aList = hLibraryInfo.Classes
+    
+    Require = hLibraryInfo.Require
+    For Each sLig In Require
+      If Not Documentation.Exist(sLig) Then
+        Error "gambas3: warning: component not found: "; sLig
+      Else
+        Documentation[sLig].Load
+      Endif
+    Next
+    
+    Help = hLibraryInfo.GetHelp()
+  
+  Else
+    
+    If Key <> "gb" Then Documentation["gb"].Load
+
+    For Each sLig In Require
+      Documentation[sLig].Load
+    Next
+    
+    Documentation.ImplementAndNeed(Me)
+    
+    If Key = PROJECT_NAME Then
+      sPath = Project.Dir &/ ".info"
+      If Not Exist(sPath) Then Return
+    Else
+      sPath = FindInfo(Key)
+      If Not sPath Then Return
+    Endif
+    
+    ' List of exported classes
+    
+    Try aList = Split(File.Load(File.SetExt(sPath, "list")), "\n", "", True)
+    ' TODO: remove duplicates. Normally it should be done in gbi3 program.
+    If Error Then
+      Error "gambas3: warning: cannot read "; File.SetExt(sPath, "list")
+      Return
+    Endif
+    
+    If {ThirdParty} Then
+      hLibraryInfo = CLibraryInfo[Component.Path &/ Key & ".gambas"]
+      Help = hLibraryInfo.GetHelp()
+    Endif
+    
+  Endif
+  
+  For Each sClass In aList
+    If Right(sClass) = "!" Then sClass = Left$(sClass, -1)
+    If Right(sClass) = "?" Then sClass = Left$(sClass, -1)
+    If sClass Then cClass[sClass] = True
+  Next
+  
+  Inc Application.Busy
+  
+  Repeat
+    
+    bAgain = False
+    cCycle = New Collection
+    
+    aLine = Split(File.Load(sPath), "\n")
+    If aLine.Count And If aLine[aLine.Max] = "" Then aLine.Remove(aLine.Max)
+    iLine = 0
+    
+    While iLine < aLine.Count
+      
+      sLig = aLine[iLine]
+      Inc iLine
+      
+      If Left$(sLig) = "#" Then
+        
+        bNextClass = False
+        
+        sClass = Mid$(sLig, 2)
+        'Print Key; ": "; sClass
+        
+        'DEBUG sClass
+        
+        If cClasses.Exist(Key &/ sClass) Then
+          If Not cCycle.Exist(sClass) Then 
+            'DEBUG "Class exists"
+            bNextClass = True
+            Continue
+          Endif
+        Endif
+        
+        'If sClass = "Application" Then Stop
+        
+        ' If we are opening a project having the same name as the component, then that
+        ' project is assumed to be the gambas part of the component. And so the classes 
+        ' described in the '.info' file can be actually part of the gambas part and must
+        ' not be processed.
+        
+        If Key = Project.Name Then
+          If Project.ExistClass(sClass) Then 'Or If cClass[sClass] Then
+            bNextClass = True
+            Continue
+          Endif
+        Endif
+        
+        sParent = aLine[iLine]
+        Inc iLine
+        
+        If Not sParent Or If sParent = sClass Then
+          hParent = cClasses[sClass]
+          If hParent And If hParent.Component <> Key And If hParent.Component <> Project.Name Then
+            sParent = sClass
+          Else
+            sParent = ""
+          Endif
+        Endif
+        
+        ' Ce test peut foirer si une classe veut hériter d'une autre classe
+        ' du même composant, qui existe déjà dans un composant déjà déclaré.
+        
+        If sParent And If Not ExistClassEvenArray(sParent) Then
+          If Not cClass.Exist(sParent) Then 
+            Error.Raise("'" & sParent & "' class is missing in " & Key & " component exported classes")
+          Endif
+          bAgain = True
+          bNextClass = True
+          'DEBUG "Parent does not exist:";; sParent
+          Continue
+        Endif
+        
+        'If Key = PROJECT_NAME And If sClass = "Editor" Then Stop
+        
+        If Not cCycle.Exist(sClass) Then
+          hClass = Documentation.CreateClass(sClass, sParent, Key)
+          cCycle[sClass] = True
+        
+          sLig = aLine[iLine]
+          Inc iLine
+          
+          hClass.Creatable = InStr(sLig, "C")
+          hClass.AutoCreatable = InStr(sLig, "A")
+        Else
+          Inc iLine
+        Endif
+        
+        GoSub READ_HELP
+        If hClass.Help Then hClass.Help &= "\n\n"
+        hClass.Help &= sHelp
+        
+        Continue
+        
+      Endif
+      
+      If bNextClass Then Continue
+      'If Key = PROJECT_NAME Then Continue
+      
+      sSymbol = sLig
+      hSym = New CSymbolInfo(Documentation, sSymbol, aLine[iLine])
+      Inc iLine
+      
+      hSym.Class = sClass
+      hSym.Component = Key
+      
+      hSym.Type = aLine[iLine]
+      Inc iLine
+      
+      If hSym.Kind = "C" Then
+        hSym.Value = UnQuote(aLine[iLine])
+      Else
+        hSym.Signature = aLine[iLine]
+      Endif
+      Inc iLine
+      
+      If Left$(hSym.Kind) = "p" Then
+        If Left$(hSym.Type, 2) = "i<" Then
+          hSym.Signature = Mid$(hSym.Type, 3, -1)
+          hSym.Type = "i"
+        Endif
+      Endif
+      
+      cClasses[Key &/ sClass].AddSymbol(hSym)
+
+      GoSub READ_HELP
+      hSym.Help = sHelp
+      
+    Wend
+    
+  Until Not bAgain
+  
+  'PRINT "Initializing controls..."
+  
+  ' If Type = "Form" Then
+  '   For Each sClass In ["Control", "Form", "Menu"]
+  '     If Classes.Exist(sClass) Then
+  '       Classes[sClass].InitControl()
+  '     Endif
+  '   Next
+  ' Endif
+  
+  For Each sClass In ClassList
+    
+    If Not IsLetter(Left(sClass)) Then Continue
+    
+    hClass = cClasses[Key &/ sClass]
+    
+    hClass.InitEvents()
+    
+    hSym = hClass.Symbols["_IsControl"]
+    If hSym And If hSym.Value Then
+      Controls.Add(hClass.Name)
+    Endif
+    
+    hSym = hClass.Symbols["_IsForm"]
+    If hSym And If hSym.Value Then
+      If hClass.Parent Then
+        hParent = cClasses[hClass.ParentComponent &/ hClass.Parent]
+        hSym = hParent.Symbols["_IsForm"]
+        If hSym And If hSym.Value Then
+          Hiddens.Add(sClass)
+          Continue
+        Endif
+      Endif
+      
+      hSym = hClass.Symbols["_HiddenControls"]
+      If hSym Then Hiddens.Insert(Split(hSym.Value, ","))
+      
+    Endif
+    
+  Next
+  
+  ' _HiddenControls can be inherited, so its contents may be not significative
+  
+  For Each sClass In Hiddens
+    If cClasses.Exist(Key &/ sClass) Then
+      cClasses[Key &/ sClass].InitControl()
+      iPos = Controls.Find(sClass)
+      If iPos >= 0 Then Controls.Remove(iPos)
+    Endif
+  Next
+  
+  For Each sClass In Controls
+    cClasses[Key &/ sClass].InitControl()
+  Next
+  
+  ClassList.Sort
+  
+  Dec Application.Busy
+  
+HAS_BEEN_LOADED:
+  
+  If Key = "gb.web" Then
+    Family = "webpage"
+    CModule.Activate(Family)
+  Endif
+  
+  'PRINT "OK"
+  
+  Return
+  
+READ_HELP:
+
+  sHelp = ""
+  While iLine < aLine.Count
+    If Left(aLine[iLine]) <> "'" Then Break
+    sHelp &= Mid$(aLine[iLine], 2) & "\n"
+    Inc iLine
+  Wend
+  
+  If sHelp Then
+    sHelp = RTrim(sHelp)
+    If InStr(sHelp, "\n") = 0 Then sHelp = LTrim(sHelp)
+  Endif
+      
+  Return
+  
+Catch
+  
+  sErr = Error.Where & "\n\n" & Error.Text
+  Dec Application.Busy
+  FMain.ShowError(sErr)
+  
+End
+
+Public Sub UsedByProject() As Boolean
+  
+  If Key = "gb" Then Return True
+  If Key = CComponent.PROJECT_NAME Then Return True
+  If Project.Components.Exist(Key) Then Return True
+  
+End
+
+Public Sub IsForm() As Boolean
+  
+  Return Implement.Exist("form")
+  
+End
+
+Public Sub GetHelpURL() As String
+  
+  Dim sPath As String
+  Dim sComp As String
+  
+  If Key And If Key <> CComponent.PROJECT_NAME Then
+
+    If {Library} Then
+      Return "gambas://library" &/ Key
+    Else
+      sPath = MHelp.GetURL("comp")
+      sComp = MHelp.ActualComponent(Key)
+      sPath &/= LCase(sComp)
+      
+      Return sPath & "?l=" & MHelp.GetLanguage()
+    Endif
+    
+  Endif
+  
+End
+
+Public Sub ExistClassEvenArray(sClass As String) As Boolean
+  
+  Do
+    If Documentation.Classes.Exist(sClass) Then Return True
+    If Right(sClass, 2) <> "[]" Then Return
+    sClass = Left(sClass, -2)
+    If Not sClass Then Return
+  Loop
+  
+End
+
+Public Sub GetHelpHTML() As String
+  
+  Dim sClass As String = Name
+  Dim sHtml As String
+  Dim sDesc As String
+  Dim hClass As CClassInfo
+  Dim sHelp As String
+
+  If Name = PROJECT_NAME Then
+    sHelp = Project.Description
+  Else If {Library} Or ThirdParty Then 
+    sHelp = Help
+  Else
+    Return
+  Endif
+
+  sHtml = MHelp.LoadCustom("component-help.html")
+  sHtml = Replace(sHtml, "$(help)", sHelp)
+  
+  sDesc = ""
+  
+  For Each sClass In ClassList
+    
+    hClass = Documentation.Classes[sClass]
+    sDesc &= "<a href=\"" & hClass.GetHelpURL() & "\">" & sClass & "</a><br>"
+    
+  Next
+
+  sHtml = Replace(sHtml, "$(classes)", sDesc)
+  sHtml = Replace(sHtml, "$(title)", Key)
+  
+  sHtml = Replace(sHtml, "''Classes''", ("Classes"))
+  
+  sHtml = Replace(sHtml, "$(hide-title)", "")
+  
+  Return sHtml
+  
+End
+
+Public Sub Match(sFilter As String) As Boolean
+  
+  For Each sFilter In Split(sFilter, " ", Chr$(34), True)
+  
+    sFilter = Util.RemoveAccents(sFilter)
+    
+    If InStr(Util.RemoveAccents(Key), sFilter, 1, gb.IgnoreCase) Then Return True
+    If InStr(Util.RemoveAccents(Name), sFilter, 1, gb.IgnoreCase) Then Return True
+    If InStr(Util.RemoveAccents(Authors.Join("\n")), sFilter, 1, gb.IgnoreCase) Then Return True
+    If InStr(Util.RemoveAccents(Implement.Join("\n")), sFilter, 1, gb.IgnoreCase) Then Return True
+    
+  Next
+  
+End
+
+Public Sub _new(hDoc As CDocumentation)
+  
+  Documentation = hDoc
+  
+End
+
+
+Public Sub _get(sClass As String) As CClassInfo
+
+  Return Documentation.Classes[Key &/ sClass]
+  
+End
+
+Public Function WikiGetClasses() As String[]
+
+  Dim aResult As New String[]
+  Dim sClass As String
+
+  Load()
+
+  aResult.Add("[[ desc")
+  aResult.Add(("Class"))
+  aResult.Add("--")
+  aResult.Add(("Description"))
+
+  For Each sClass In ClassList
+    If Left(sClass) = "." Or If Left(sClass) = "_" Or If InStr(sClass, "*") Then Continue
+    'aClass.Add(sClass)
+    aResult.Add("==")
+    aResult.Add("[/comp" &/ Key &/ LCase(sClass) & "]")
+    aResult.Add("--")
+    aResult.Add(Me[sClass].WikiGetDescription())
+  Next
+  
+  aResult.Add("]]")
+  Return aResult
+
+Catch
+
+  Return ["`" & Error.Where & ": " & Error.Text & "`"]
+
+End
+
+Public Sub WikiGetDescription() As String[]
+  
+  Dim aResult As New String[]
+  Dim sInfo As String
+  
+  Select Case State
+    Case UNSTABLE
+      aResult.Add(("This component is not stable yet."))
+    Case DEPRECATED
+      aResult.Add("*" & ("This component is deprecated.") & "*")
+  End Select
+  
+  aResult.Add("[[ desc")
+  
+  If Authors.Count Then
+  
+    aResult.Add("==")
+    If Authors.Count = 1 Then
+      aResult.Add("**" & ("Author") & "**")
+    Else
+      aResult.Add("**" & ("Authors") & "**")
+    Endif
+    aResult.Add("--")
+    aResult.Add(Authors.Join(", ") & ".")
+    
+  Endif
+
+  If Implement.Count Then
+
+    aResult.Add("==")
+    aResult.Add("**" & ("Implements") & "**")
+    aResult.Add("--")
+    
+    For Each sInfo In Implement
+      aResult.Add(CDocumentation.Features[LCase(sInfo)] & "\\")
+    Next
+    
+  Endif
+  
+  If Need.Count Or If Require.Count Then
+  
+    aResult.Add("==")
+    aResult.Add("**" & ("Requires") & "**")
+    aResult.Add("--")
+    
+    For Each sInfo In Need
+      aResult.Add(CDocumentation.Features[LCase(sInfo)] & "\\")
+    Next
+    For Each sInfo In Require
+      aResult.Add("[/comp/" & LCase(sInfo) & "]\\")
+    Next
+    
+  Endif
+  
+  If Exclude.Count Then
+  
+    aResult.Add("==")
+    aResult.Add("**" & ("Excludes") & "**")
+    aResult.Add("--")
+    
+    For Each sInfo In Exclude
+      aResult.Add("[/comp/" & LCase(sInfo) & "]\\")
+    Next
+    
+  Endif
+  
+  aResult.Add("]]")
+  Return aResult
+  
+Catch
+
+  Return ["`" & Error.Where & ": " & Error.Text & "`"]
+
+End
+
+Static Public Sub GetUnknown(sKey As String) As CComponent
+  
+  If Not $hUnknown Then
+    $hUnknown = New CComponent(Null)
+    $hUnknown.Loaded = True
+    $hUnknown.State = UNKNOWN
+  Endif
+  
+  $hUnknown.Key = sKey
+  $hUnknown.Name = CDocumentation.GetName(sKey)
+  
+  Return $hUnknown
+  
+End
+

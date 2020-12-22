@@ -1,0 +1,431 @@
+' Gambas class file
+
+'Static Private $aSupport As String[]
+'Static Private $iWait As Integer
+'Static Private $iSupport As Integer
+
+'Private $aUser As New CUser[]
+'Private $hBack As Picture
+'Private $iStep As Integer
+'Private $iFirst As Integer
+'Private $bDrawAbout As Boolean
+
+Private Const NSTEP As Integer = 100
+
+Private $hWelcome As CWelcome
+
+Private $aCache As Image[]
+Private $Y As Integer
+Private $YP As Integer
+Private $bPressed As Boolean
+
+Static Public Sub Run()
+
+  Dim hForm As FAbout
+
+  hForm = New FAbout
+  hForm.ShowModal
+
+End
+
+Public Sub _new()
+
+  ' Dim hImage As Image
+  ' Dim hBackground As Image
+  
+  Me.Background = Color.SetAlpha(Color.TextBackground, 30)
+
+  'hImage = Image.Load("img/background/tawhid.png")
+  'hBackground = New Image(hImage.W, hImage.H, Color.SetAlpha(Color.TextBackground, 160))
+  'hBackground.PaintImage(hImage, 0, 0)
+  'Me.Picture = hBackground.Picture
+  
+End
+
+
+Public Sub Form_Open()
+
+  $hWelcome = New CWelcome(dwgWelcome)
+
+End
+
+
+Public Sub btnClose_Click()
+
+  Me.Close
+
+End
+
+
+Private Sub RemoveLink(sStr As String) As String
+  
+  Dim iPos As Integer
+  Dim iPos2 As Integer
+  
+  Do
+
+    iPos = InStr(sStr, "<a href=")
+    If iPos = 0 Then Break
+
+    iPos2 = InStr(sStr, ">", iPos)
+    If iPos2 = 0 Then iPos2 = Len(sStr) + 1
+    sStr = Left(sStr, iPos - 1) & Mid(sStr, iPos2 + 1)
+    
+  Loop
+  
+  Return Replace(sStr, "</a>", "")
+  
+End
+
+Private Function GetStars(iStar As Integer) As String
+
+  Dim sStar As String
+  Dim iInd As Integer
+  
+  For iInd = 1 To iStar
+    If ((iInd - 1) Mod 5) = 0 Then
+      sStar &= "★"
+    Else
+      sStar &= "☆"
+    Endif
+  Next
+
+  Return sStar  
+
+End
+
+Private Sub FillAbout()
+
+  Dim hFile As File
+  Dim sText As String
+  Dim sLig As String
+  Dim sMail As String
+  Dim sCountry As String
+  Dim sName As String
+  Dim aAuthor As New String[]
+  Dim aFinancial As New String[]
+  Dim aSplit As String[]
+  Dim iPos As Integer
+  Dim I As Integer
+  Dim N As Integer
+  Dim sDesc As String
+  Dim sColor As String
+  Dim hFont As Font
+
+  hFile = Open "AUTHORS" For Input
+
+  While Not Eof(hFile)
+
+    Line Input #hFile, sLig
+    sLig = RTrim(sLig)
+    If Not sLig Then Continue
+    If Left(sLig) = "#" Then Continue
+
+    If Not IsSpace(Left(sLig)) Then
+      
+      If sName Then aAuthor.Add(sName & "\n\n" & Html(sMail) & "\n" & sCountry & "\n" & sDesc)
+      
+      sName = Trim(sLig)
+      sMail = ""
+      sCountry = ""
+      sDesc = ""
+      
+      iPos = RInStr(sName, "<")
+      If iPos Then
+        sMail = Mid$(sName, iPos + 1)
+        If Right(sMail) = ">" Then sMail = Left(sMail, -1)
+        sName = Trim(Left(sName, iPos - 1))
+      Endif
+      
+      iPos = RInStr(sName, "(")
+      If iPos Then
+        sCountry = Mid$(sName, iPos + 1)
+        If Right(sCountry) = ")" Then sCountry = Left(sCountry, -1)
+        sName = Trim(Left(sName, iPos - 1))
+      Endif
+      
+    Else
+      
+      sLig = RemoveLink(Markdown.ToHTML(LTrim(sLig)))
+      If sLig Begins "<p>" Then sLig = Mid$(sLig, 4)
+      If sLig Ends "</p>" Then sLig = Left$(sLig, -4)
+      If sDesc Then sDesc &= "<br>"
+      sDesc &= sLig
+      
+    Endif
+
+  Wend
+
+  If sName Then aAuthor.Add(sName & "\n\n" & sMail & "\n" & sCountry & "\n" & sDesc)
+  
+  Close #hFile
+  
+  hFile = Open "support.txt" For Input
+  ' 
+  While Not Eof(hFile)
+    
+    Line Input #hFile, sLig
+    
+    iPos = InStr(sLig, " ")
+    If iPos = 0 Then Break
+    
+    sName = Mid$(sLig, iPos + 1)
+    sText = sName & "\n" & Left(sLig, iPos - 1)
+
+    aFinancial.Add(sText)
+    
+    ' iPos = aAuthor.Find(sName & "\n*", gb.Like)
+    ' If iPos < 0 Then
+    '   aAuthor.Add(sText)
+    ' Else
+    '   aAuthor[iPos] = sText & Mid$(aAuthor[iPos], Len(sName) + 2)
+    ' Endif
+    
+  Wend
+  
+  Close #hFile
+
+  aAuthor.Sort(gb.Language + gb.IgnoreCase)
+  aFinancial.Reverse()
+  
+  gvwAbout.Columns.Count = 1
+  N = 6
+  
+  gvwAbout.Rows.Count = aAuthor.Count + aFinancial.Count + N + 2
+  gvwAbout.Columns[0].Width = Me.ClientWidth - Desktop.Scale * 6
+  gvwAbout.Padding = 0
+  
+  ' Space
+  gvwAbout.Rows[0].H = dwgAbout.H
+  ' Gambas
+  gvwAbout[1, 0].RichText = "<b>G</b>ambas <b>A</b>lmost<br><b>M</b>eans <b>BAS</b>ic !"
+  gvwAbout[1, 0].Font = Font["+10"]
+  gvwAbout[1, 0].Alignment = Align.Top
+  'gvwAbout[1, 0].WordWrap = True
+  ' Logo
+  gvwAbout[2, 0].Picture = Picture["icon:/128/gambas"]
+  gvwAbout[2, 0].Alignment = Align.Top
+  ' Licence title
+  'gvwAbout[3, 0].Text = ("License")
+  'gvwAbout[3, 0].Font = Font["Bold,+2"]
+  'gvwAbout[3, 0].Alignment = Align.Top
+  ' Licence
+  gvwAbout[4, 0].RichText = "<h1>" & String.UCase(("License")) & "</h1><br>" & lblLicense.Text
+  gvwAbout[4, 0].WordWrap = True
+  gvwAbout[4, 0].Alignment = Align.Top
+  gvwAbout[4, 0].Padding = Desktop.Scale * 3
+  ' Authors title
+  gvwAbout[5, 0].RichText = "<h1>" & String.UCase(("Authors")) & "</h1>"
+  'gvwAbout[5, 0].WordWrap = True
+  gvwAbout[5, 0].Alignment = Align.Top
+  
+  For I = 1 To 5
+    gvwAbout.Rows[I].H = -1
+  Next
+  gvwAbout.Rows[4].H += Desktop.Scale * 2
+  
+  sColor = "#" & Hex$(Color.Merge(Color.TextBackground, Color.TextForeground, 0.8), 6)
+  
+  For I = 0 To aAuthor.Max
+    
+    aSplit = Split(aAuthor[I], "\n")
+    
+    sName = String.UCase(aSplit[0])
+    '"<font size=\"-2\" color=\"#808080\">" & String$(64, "─") & "</font>
+    sText = "<br><br><b><font size=+1>" & sName & "</font>"
+
+    If aSplit.Count = 2 Then
+      
+      sText &= "</b><blockquote>"
+      sText &= "<font color=\"" & sColor & "\">"
+      sText &= ("Financial support") & "<br>" & GetStars(CInt(aSplit[1]))
+      
+    Else
+      
+      sText &= "</b>"
+      If aSplit[3] Then sText &= " <i>(" & aSplit[3] & ")</i>"
+      If aSplit[2] Then sText &= "<br><tt>" & aSplit[2] & "</tt>"
+      sText &= "<blockquote>"
+      sText &= "<font color=\"" & sCOlor & "\">"
+      sText &= aSplit[4]
+      If aSplit[1] Then sText &= "<br>" & ("Financial support") & "<br>" & GetStars(CInt(aSplit[1]))
+      sText &= "</font>"
+
+    Endif
+    
+    sText &= "</blockquote>"
+    
+    gvwAbout[N, 0].WordWrap = True
+    gvwAbout[N, 0].RichText = sText
+    gvwAbout[N, 0].Padding = Desktop.Scale 
+    gvwAbout[N, 0].Alignment = Align.Center
+    gvwAbout.Rows[N].Height = -1
+    Inc N
+    
+  Next
+  
+  gvwAbout[N, 0].RichText = "<br><br><h1>" & String.UCase(("Financial support")) & "</h1>"
+  'gvwAbout[N, 0].WordWrap = True
+  gvwAbout[N, 0].Alignment = Align.Top
+  gvwAbout.Rows[N].H = -1
+  gvwAbout.Rows[N].H += Desktop.Scale * 3
+  Inc N
+  
+  hFont = gvwAbout.Font.Copy()
+  
+  For I = 0 To aFinancial.Max
+    
+    aSplit = Split(aFinancial[I], "\n")
+    
+    sText = String.UCase(aSplit[0])
+    
+    hFont.Size = Min(24, CInt(aSplit[1]) / 2 + 7)
+    gvwAbout[N, 0].Font = hFont
+    gvwAbout[N, 0].WordWrap = True
+    gvwAbout[N, 0].RichText = sText
+    'gvwAbout[N, 0].Padding = Desktop.Scale 
+    gvwAbout[N, 0].Alignment = Align.Center
+    gvwAbout[N, 0].Padding = 0
+    gvwAbout.Rows[N].Height = hFont.H + Desktop.Scale \ 4
+    Inc N
+
+  Next
+  
+  ' Final space
+  'gvwAbout[N, 0].Background = Color.Yellow
+  gvwAbout.Rows[N].H = dwgAbout.H
+
+End
+
+Private Sub ScrollText(D As Integer)
+
+  Dim hImage As Image
+  
+  $Y += D
+
+  If D > 0 Then
+    
+    While $Y >= dwgAbout.H 
+      
+      $Y -= dwgAbout.H
+      
+      hImage = $aCache[0]
+      $aCache[0] = $aCache[1]
+      $aCache[1] = $aCache[2]
+      $aCache[2] = hImage
+      
+      Inc $YP
+      If ($YP * dwgAbout.H) >= (gvwAbout.ScrollH - dwgAbout.H) Then $YP = 0
+  
+      PaintAbout($aCache[2], $YP)
+      
+    Wend
+
+  Else If D < 0 Then
+    
+    While $Y < 0 
+
+      If $YP = 2 Then
+        $Y = 0
+        Break
+      Endif
+      
+      $Y += dwgAbout.H
+      
+      hImage = $aCache[2]
+      $aCache[2] = $aCache[1]
+      $aCache[1] = $aCache[0]
+      $aCache[0] = hImage
+      
+      Dec $YP
+      If $YP < 0 Then $YP = gvwAbout.ScrollH \ dwgAbout.H - 1
+      PaintAbout($aCache[0], $YP - 2)
+      
+    Wend
+
+  Endif
+  
+  dwgAbout.Refresh
+  
+End
+
+Public Sub timAbout_Timer()
+
+  ScrollText(If($bPressed, 16, 1))
+
+End
+
+Public Sub dwgAbout_Draw()
+  
+  Paint.DrawImage($aCache[0], 0, -$Y)
+  If $Y > 0 Then Paint.DrawImage($aCache[1], 0, dwgAbout.H - $Y)
+  
+End
+
+
+
+Public Sub Form_KeyPress()
+
+  If Key.Code = Key.Escape Then Me.Close
+
+End
+
+
+Public Sub dwgWelcome_MouseDown()
+
+  Me.Close
+
+End
+
+Private Sub PaintAbout(hImage As Image, iPos As Integer)
+
+  gvwAbout.Move(Me.ClientW, 0, dwgAbout.W, dwgAbout.H)
+  If iPos < 0 Then iPos += gvwAbout.ScrollH \ dwgAbout.H
+  gvwAbout.Scroll(0, iPos * dwgAbout.H)
+  hImage.Fill(Color.Transparent)
+  Paint.Begin(hImage)
+  Paint.ClipRect = Rect(0, 0, dwgAbout.W, dwgAbout.H)
+  gvwAbout.ScrollArea_Draw
+  Paint.End
+
+End
+
+Public Sub Form_Arrange()
+  
+  Dim I As Integer
+  
+  FillAbout
+  
+  $aCache = New Image[3]
+  
+  For I = 0 To $aCache.Max
+    $aCache[I] = New Image(dwgAbout.W, dwgAbout.H)
+    PaintAbout($aCache[I], I)
+    '$aCache[I].Save("~/cache-" & CStr(I) & ".png")
+  Next
+  $YP = 2
+  
+End
+
+Public Sub dwgAbout_MouseDown()
+
+  $bPressed = True
+
+End
+
+Public Sub dwgAbout_MouseUp()
+
+  $bPressed = False
+
+End
+
+Public Sub dwgAbout_MouseWheel()
+
+  Dim I As Integer
+
+  For I = 1 To 32
+    ScrollText(If(Mouse.Forward, -2, 2))
+    Wait
+  Next
+
+End

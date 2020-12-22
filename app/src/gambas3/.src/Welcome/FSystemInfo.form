@@ -1,0 +1,38 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,98,75)
+  Background = Color.TextBackground
+  Text = ("System information")
+  Icon = Picture["icon:/large/system"]
+  Arrangement = Arrange.Vertical
+  Spacing = True
+  Margin = True
+  { gvwInfo GridView
+    MoveScaled(5,5,49,22)
+    Font = Font["-2"]
+    Expand = True
+    Grid = False
+    ScrollBar = Scroll.Vertical
+  }
+  { HBox1 HBox
+    MoveScaled(1,62,66,4)
+    Spacing = True
+    { Panel1 Panel
+      MoveScaled(19,1,7,4)
+      Expand = True
+    }
+    { btnCopy Button
+      MoveScaled(29,0,18,4)
+      Text = Shortcut(("Copy"), "C")
+      Picture = Picture["icon:/small/copy"]
+    }
+    { btnClose Button
+      MoveScaled(48,0,18,4)
+      Text = ("Close")
+      Picture = Picture["icon:/16/close"]
+      Default = True
+      Cancel = True
+    }
+  }
+}

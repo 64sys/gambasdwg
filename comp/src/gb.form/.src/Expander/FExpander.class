@@ -1,0 +1,218 @@
+' Gambas class file
+
+Private $bHidden As Boolean
+Private $H As Integer
+Private $bInside As Boolean
+Private $bAnim As Boolean
+
+Private Const HIDE_TIME As Float = 0.1
+Private $sText As String
+
+Public Sub _new()
+  
+  'dwgTitle_Font
+  
+End
+
+
+Private Sub GetParent() As Expander
+  
+  Return Me.Parent
+  
+End
+
+
+Public Sub GetContainer() As Container
+  
+  Return panContainer
+  
+End
+
+Public Sub GetHidden() As Boolean
+  
+  Return Not panContainer.Visible
+  
+End
+
+' Private Sub UpdatePicture()
+'   
+'   If $bHidden Then 
+'     $hIcon = Picture["img/8/side-right.png"]
+'     $hIconVoid = Picture["img/8/side-right-void.png"]
+'   Else 
+'     $hIcon = Picture["img/8/side-bottom.png"]
+'     $hIconVoid = Picture["img/8/side-bottom-void.png"]
+'   Endif
+' 
+'   'If $bInside Then  
+'     btnExpand.Picture = $hIcon
+'   'Else
+'   '  btnExpand.Picture = $hIconVoid
+'   'Endif
+'   
+' End
+
+
+Public Sub SetHidden(bHidden As Boolean)
+
+  Dim DY As Integer
+  Dim eTime As Float
+
+  If Me.Parent.Design Then Return
+  If bHidden = $bHidden Then Return 
+  
+  $bHidden = bHidden
+  dwgTitle.Refresh
+  
+  If $bHidden Then 
+
+    $H = Me.Parent.H
+
+    If $bAnim Then     
+      eTime = Timer
+      DY = $H - dwgTitle.H
+      While Timer < (eTime + HIDE_TIME)
+        Me.Parent.H = $H - ((Timer - eTime) / HIDE_TIME) * DY
+        Wait
+      Wend
+    Endif
+
+    Me.Parent.H = dwgTitle.H
+
+    panContainer.Hide
+    GetParent()._Hide()
+    
+  Else 
+  
+    GetParent()._Show()
+    panContainer.Show
+    
+    If $bAnim Then 
+      eTime = Timer
+      DY = $H - dwgTitle.H
+      While Timer < (eTime + HIDE_TIME)
+        Me.Parent.H = dwgTitle.H + ((Timer - eTime) / HIDE_TIME) * DY
+        Wait
+      Wend
+    Endif
+
+    Me.Parent.H = $H
+  Endif
+  
+End
+
+
+Public Sub GetText() As String
+  
+  Return $sText
+  
+End
+
+Public Sub SetText(sText As String)
+  
+  $sText = sText
+  dwgTitle.Refresh
+  
+End
+
+Public Sub GetFont() As Font
+  
+  Return dwgTitle.Font
+  
+End
+
+Public Sub SetFont(hFont As Font)
+  
+  dwgTitle.Font = hFont
+  dwgTitle.Refresh
+  
+End
+
+
+
+Public Sub btnExpand_MouseDown()
+
+  If Not Me.Enabled Then Return
+  SetHidden(Not $bHidden)
+
+End
+
+Public Sub GetAnimated() As Boolean
+  
+  Return $bAnim
+  
+End
+
+Public Sub SetAnimated(bAnim As Boolean)
+  
+  $bAnim = bAnim
+  
+End
+
+Public Sub dwgTitle_Font()
+  
+  dwgTitle.H = Desktop.Scale + Max(Desktop.Scale * 2, ((dwgTitle.Font.Height + Desktop.Scale - 1) \ Desktop.Scale) * Desktop.Scale)
+  
+End
+
+Public Sub dwgTitle_MouseDown()
+
+  SetHidden(Not $bHidden)
+
+End
+
+Public Sub GetBorder() As Boolean
+  
+  Return panContainer.Border <> Border.None
+  
+End
+
+Public Sub SetBorder(bBorder As Boolean)
+  
+  panContainer.Border = If(bBorder, Border.Plain, Border.None)
+  
+End
+
+
+Public Sub dwgTitle_Draw()
+
+  Dim iFlag As Integer
+  Dim Y, W As Integer
+  Dim D As Integer
+  
+  D = Desktop.Scale
+  W = D * 3 / 2
+  Y = (Paint.H - W) / 2
+  
+  If Not Me.Enabled Then iFlag += Draw.Disabled
+  If $bInside And If Me.Enabled Then iFlag += Draw.Hover
+  
+  If System.RightToLeft Then
+    Style.PaintArrow(Paint.W - W, Y, W, W, If($bHidden, Align.Left, Align.Bottom), iFlag)
+    If $bInside Then Paint.DrawTextShadow($sText, 0, 0, Paint.W - W - D, Paint.H, Align.Normal)
+    Paint.DrawText($sText, 0, 0, Paint.W - W - D, Paint.H, Align.Normal)
+  Else
+    Style.PaintArrow(0, Y, W, W, If($bHidden, Align.Right, Align.Bottom), iFlag)
+    If $bInside Then Paint.DrawTextShadow($sText, W + D, 0, Paint.W, Paint.H, Align.Normal)
+    Paint.DrawText($sText, W + D, 0, Paint.W, Paint.H, Align.Normal)
+  Endif
+
+End
+
+Public Sub dwgTitle_Enter()
+
+  If Me.Enabled Then
+    $bInside = True
+    dwgTitle.Mouse = Mouse.Pointing
+    dwgTitle.Refresh
+  Endif
+
+End
+
+Public Sub dwgTitle_Leave()
+
+  $bInside = False
+    dwgTitle.Mouse = Mouse.Default
+  dwgTitle.Refresh
+
+End

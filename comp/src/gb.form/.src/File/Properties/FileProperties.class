@@ -1,0 +1,98 @@
+' Gambas class file
+
+Export
+Inherits UserControl
+
+Public Const _Properties As String = "*,Border=True"
+Public Const _DefaultSize As String = "36,36"
+Public Const _Group As String = "View"
+
+Event Data
+Event Click
+
+Property Path As String
+Property Border As Boolean
+Property Read Data As _FilePropertiesData
+
+Property Index As Integer
+
+
+Private frmDialog As FFileProperties
+Private $hData As _FilePropertiesData
+
+Public Sub _new()
+
+  frmDialog = New FFileProperties(Me)
+  'Object.Attach(frmDialog, Me, "frmDialog")
+  
+End
+
+Private Function Path_Read() As String
+
+  Return frmDialog.GetPath()
+
+End
+
+Private Sub Path_Write(Value As String)
+
+  frmDialog.SetPath(Value)
+
+End
+
+Public Sub Add((Panel) As Control, Title As String) As Integer
+  
+  Return frmDialog.Add(Panel, Title)
+  
+End
+
+
+Private Function Border_Read() As Boolean
+
+  Return frmDialog.GetBorder()
+
+End
+
+Private Sub Border_Write(Value As Boolean)
+
+  frmDialog.SetBorder(Value)
+
+End
+
+Private Function Data_Read() As _FilePropertiesData
+
+  If Not $hData Then Error.Raise("Data property unavailable")
+  Return $hData
+
+End
+
+Public Sub _RaiseData() As _FilePropertiesData
+  
+  Dim bCancel As Boolean
+  
+  If Not Object.CanRaise(Me, "Data") Then Return 
+  
+  $hData = New _FilePropertiesData
+  bCancel = Raise Data
+  If bCancel Then Return
+  
+  Return $hData
+  
+End
+
+Public Sub _RaiseClick()
+  
+  Raise Click
+  
+End
+
+Private Function Index_Read() As Integer
+
+  Return frmDialog.GetIndex()
+
+End
+
+Private Sub Index_Write(Value As Integer)
+
+  frmDialog.SetIndex(Value)
+
+End

@@ -1,0 +1,10 @@
+# Gambas Project File 3.0
+Title=Utility routines
+Startup=MMain
+Version=3.14.90
+VersionFile=1
+TabSize=2
+Translate=1
+Language=en_US
+Type=Component
+Packager=1

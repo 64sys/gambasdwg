@@ -1,0 +1,68 @@
+' Gambas class file
+
+Private $sPath As String
+
+Public Sub Run(sPath As String) As String
+  
+  $sPath = sPath
+  If Me.ShowModal() Then Return $sPath
+  
+End
+
+
+Public Sub Form_Open()
+
+  Settings.Read(Me)
+  Settings.Read(fchExec, "fchExec")
+
+  fchExec.Filter = ["*.gambas", ("Gambas applications")]
+  fchExec.SelectedPath = $sPath
+  fchExec.SetFocus
+  
+  chkDebug.Value = Project.KeepDebugInfo
+
+  chkIncVersion.Value = Not Project.Config["/Executable/DoNotIncrementVersion", False]
+  chkIncVersion.Visible = Not Project.VersionFile
+
+  chkNoTest.Visible = Project.HasTest()
+  chkNoTest.Value = Project.Config["/Executable/NoTestModule", False]
+
+  ' If Project.CreateComponent Then 
+  '   chkShortcut.Text = ("Install in the user component directory")
+  ' Else
+  '   chkShortcut.Text = ("Create a shortcut on the desktop")
+  ' Endif
+  chkShortcut.Value = Project.CreateShortcut
+  chkShortcut.Visible = Project.Type = Project.TYPE_NORMAL
+  txtCommand.Text = Project.RunAfterMakingExec
+  
+  tabExec.Index = 0
+  
+End
+
+Public Sub Form_Close()
+
+  Settings.Write(fchExec, "fchExec")
+  Settings.Write(Me)
+
+End
+
+Public Sub btnOK_Click()
+
+  $sPath = fchExec.SelectedPath
+  Project.KeepDebugInfo = chkDebug.Value
+  Project.CreateShortcut = chkShortcut.Value
+  Project.RunAfterMakingExec = Trim(txtCommand.Text)
+  Project.Config["/Executable/DoNotIncrementVersion"] = chkIncVersion.Value = CheckBox.False
+  Project.Config["/Executable/NoTestModule"] = CBool(chkNoTest.Value)
+  Project.WriteProject(True)
+  Me.Close(True)
+
+End
+
+Public Sub btnCancel_Click()
+
+  Me.Close
+
+End
+

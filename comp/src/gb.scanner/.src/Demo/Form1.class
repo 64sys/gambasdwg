@@ -1,0 +1,25 @@
+' Gambas class file
+
+Private $himage As New Image
+
+
+Public Sub Button1_Click()
+  Dim hscan As New Scanner("hpaio:/net/OfficeJet_5200_series?ip=192.168.1.25")
+   '$himage = Scanners["hpaio:/net/OfficeJet_5200_series?ip=192.168.1.25"].Scan()
+   hscan["Mode"].Value = "Color"
+   $himage = hscan.Scan()
+   DrawingArea1.Refresh
+   
+End
+
+Public Sub Form_Open()
+
+  
+
+End
+
+Public Sub DrawingArea1_Draw()
+
+  Draw.Image($himage, 0, 0, Paint.Width, Paint.Height)
+
+End

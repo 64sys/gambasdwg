@@ -1,0 +1,70 @@
+' Gambas class file
+
+''' This class represents the attributes of a terminal character.
+
+Export
+Fast
+
+Private Enum FLAG_BG, FLAG_FG, FLAG_BOLD, FLAG_DIM, FLAG_REV, FLAG_UND, FLAG_BLK
+
+'' Return or set the character foreground color.
+Public Foreground As Integer = -1
+'' Return or set the character background color.
+Public Background As Integer = -1
+'' Return or set the character "bold" attribute.
+Public Bold As Boolean
+'' Return or set the character "dim" attribute.
+Public Dim As Boolean
+'' Return or set the character "underscore" attribute.
+Public Underscore As Boolean
+'' Return or set the character "reverse" attribute.
+Public Reverse As Boolean
+'' Return or set the character "blink" attribute.
+Public Blink As Boolean
+
+'' Reset the character flags.
+
+Public Sub Reset()
+  
+  Foreground = -1
+  Background = -1
+  Bold = False
+  {Dim} = False
+  Underscore = False
+  Reverse = False
+  Blink = False
+  
+End
+
+'' Return if the character attributes are the default ones.
+
+Public Sub IsVoid() As Boolean
+  
+  If Foreground >= 0 Then Return
+  If Background >= 0 Then Return
+  If Bold Or If {Dim} Or If Underscore Or If Reverse Or If Blink Then Return
+  Return True
+  
+End
+
+Public Sub _FillFrom(iAttr As Integer)
+
+  If BTst(iAttr, FLAG_BG) Then
+    Background = Lsr(iAttr, 16) And 255
+  Else
+    Background = Color.Default
+  Endif
+
+  If BTst(iAttr, FLAG_FG) Then
+    Foreground = Lsr(iAttr, 24) And 255
+  Else
+    Foreground = Color.Default
+  Endif
+  
+  Bold = BTst(iAttr, FLAG_BOLD)
+  {Dim} = BTst(iAttr, FLAG_DIM)
+  Reverse = BTst(iAttr, FLAG_REV)
+  Underscore = BTst(iAttr, FLAG_UND)
+  Blink = BTst(iAttr, FLAG_BLK)
+  
+End

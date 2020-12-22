@@ -1,0 +1,30 @@
+# Gambas Form File 3.0
+
+{ WebForm WebForm
+  #MoveScaled(0,0,74,91)
+  Arrangement = Arrange.Vertical
+  Margin = True
+  Spacing = True
+  { WebComboBox1 WebComboBox
+    #MoveScaled(1,1,72,4)
+    List = [(""), ("Élément 1"), ("Élément 2"), ("Élément 3")]
+  }
+  { WebTextBox1 WebTextBox
+    #MoveScaled(1,6,72,4)
+  }
+  { WebTextArea1 WebTextArea
+    #MoveScaled(1,11,72,16)
+  }
+  { WebHBox1 WebHBox
+    #MoveScaled(1,28,72,7)
+    Spacing = True
+    { WebButton1 WebButton
+      #MoveScaled(1,1,16,5)
+      Text = ("Copy")
+    }
+    { WebButton2 WebButton
+      #MoveScaled(18,1,16,5)
+      Text = ("Text")
+    }
+  }
+}

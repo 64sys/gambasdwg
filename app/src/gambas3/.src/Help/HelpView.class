@@ -1,0 +1,239 @@
+' Gambas class file
+
+Export
+
+Public Const _Properties As String = "*,NoHeader"
+Public Const _DrawWith As String = "WebView"
+
+Inherits WebView
+
+Property NoHeader As Boolean
+
+Private $hObs As Observer
+Private $hWatcher As Watcher
+Private $hSpinner As Spinner
+Private $bNoHeader As Boolean
+Private $sNextUrl As String
+Private $hNotExist As Label
+
+Public Sub _new()
+
+  $hObs = New Observer(Me) As "WebView"
+  $hWatcher = New Watcher(Me) As "WebView"
+  
+  $hSpinner = New Spinner(Me.Window)
+  $hSpinner.Hide
+  $hSpinner.Ignore = True
+  $hSpinner.ResizeScaled(8, 8)
+  
+  $hNotExist = New Label(Me.Window) As "lblNotExist"
+  $hNotExist.Hide
+  $hNotExist.Ignore = True
+  $hNotExist.Alignment = Align.Center
+  $hNotExist.Padding = Desktop.Scale \ 2
+  $hNotExist.ResizeScaled(20, 4)
+  $hNotExist.Text = ("This page does not exist.")
+  $hNotExist.AutoResize = True
+  $hNotExist.Font.Bold = True
+  $hNotExist.Border = Border.Plain
+  $hNotExist.Background = Color.TextBackground
+  
+End
+
+Private Sub ShowWaiting(bShow As Boolean)
+
+  If $hSpinner.Visible = bShow Then Return
+
+  If bShow Then
+    $hSpinner.Show
+    WebView_Move
+    $hSpinner.Raise
+    $hSpinner.Start
+  Else
+    $hSpinner.Stop
+    $hSpinner.Hide
+  Endif
+
+End
+
+' Public Sub WebView_Error()
+'   
+'   Dim sLastUrl As String
+'   
+'   ShowWaiting(False)
+'   
+'   If Not $sLastUrl Then 
+'     sLastUrl = Me.Url
+'   Else
+'     sLastUrl = $sLastUrl
+'     $sLastUrl = ""
+'   Endif
+'   
+'   If sLastUrl Begins "/" Then sLastUrl = Project.WIKI_ROOT &/ sLastUrl
+'   
+'   If sLastUrl Begins "gambas://" Then 
+'     
+'     Me.Stop
+'     MHelp.ManageSpecialLink(Me, sLastUrl)
+'     Return
+'     
+'   Else If sLastUrl Begins "wiki://" Then
+'     
+'     MHelp.MakeOffline(Me, sLastUrl, $bNoHeader)
+'     Return
+'     
+'   Endif
+'   
+' End
+
+Public Sub WebView_Move()
+  
+  Dim hWin As Window
+  
+  If Not $hSpinner Then Return
+  
+  With Me
+    hWin = $hSpinner.Window
+    $hSpinner.Move(.ScreenX - hWin.ScreenX - hWin.ClientX + (.W - $hSpinner.W) \ 2, .ScreenY - hWin.ScreenY - hWin.ClientY + (.H - $hSpinner.H) \ 2)
+  End With
+  
+  $hNotExist.Hide
+  
+End
+
+Public Sub WebView_Resize()
+
+  WebView_Move
+  
+End
+
+Public Sub WebView_NewView()
+  
+  Project.OpenWebPage(Me.Link)
+  
+End
+
+Public Sub TimerUrl_Timer()
+
+  'Debug $sNextUrl
+
+  Dim hWin As Window
+  
+  'Debug $sNextUrl
+  
+  If $sNextUrl Begins "gambas://" Then 
+    
+    MHelp.ManageSpecialLink(Me, $sNextUrl)
+    
+  Else If $sNextUrl Begins "wiki://" Then
+    
+    If MHelp.MakeOffline(Me, $sNextUrl, $bNoHeader) Then
+      hWin = Me.Window
+      $hNotExist.Move(Mouse.ScreenX - hWin.ScreenX, Mouse.ScreenY - hWin.ScreenY + Desktop.Scale * 2)
+      $hNotExist.Show
+      $hNotExist.Raise
+    Endif
+    
+  Endif
+  
+  $sNextUrl = ""
+  
+End
+
+' Public Sub WebView_Navigate()
+' 
+'   Dim sUrl As String
+'   Dim hTimer As Timer
+'   
+'   sUrl = Me.Link
+'   Debug sUrl
+'   
+' End
+
+' Public Sub WebView_Link()
+'   
+'   Debug Me.Link
+'   
+' End
+
+Public Sub WebView_Start()
+  
+  Dim sUrl As String
+  Dim hTimer As Timer
+  
+  'Debug Me.Link
+  
+  ShowWaiting(True)
+  $hNotExist.Hide
+
+  sUrl = Me.Link
+  If Not sUrl Then sUrl = Me.Url
+  If sUrl Begins "gambas://" Or If sUrl Begins "wiki://" Then 
+
+    $sNextUrl = sUrl
+    'Me.Stop
+    hTimer = New Timer As "TimerUrl"
+    hTimer.Trigger
+    
+    Stop Event
+    Return
+    
+  Endif
+      
+  ' sLastUrl = Me.Link
+  ' If Not sLastUrl Then sLastUrl = Me.Url
+  ' 
+  ' ' If $sLastUrl Then
+  ' '   sLastUrl = $sLastUrl
+  ' '   $sLastUrl = ""
+  ' ' Else
+  ' '   sLastUrl = Me.Url
+  ' ' Endif
+  ' 
+  ' If sLastUrl Begins "/" Then sLastUrl = Project.WIKI_ROOT &/ sLastUrl
+  ' 
+  ' If sLastUrl Begins "gambas://" Or If sLastUrl Begins "wiki://" Then 
+  '   
+  '   $sNextUrl = sLastUrl
+  '   'Me.Stop
+  '   hTimer = New Timer As "TimerUrl"
+  '   hTimer.Trigger
+  '   
+  '   'Debug Me;; sLastUrl
+  '   Me.Stop
+  '  
+  ' Endif
+      
+End
+     
+  
+Public Sub WebView_Finish()
+  
+  ShowWaiting(False)
+  
+End
+
+Private Function NoHeader_Read() As Boolean
+
+  Return $bNoHeader
+
+End
+
+Private Sub NoHeader_Write(Value As Boolean)
+
+  $bNoHeader = Value
+
+End
+
+Public Sub Stop()
+  
+  Super.Stop
+  ShowWaiting(False)
+  
+End
+
+Public Sub lblNotExist_MouseDown()
+  
+  $hNotExist.Hide
+  
+End

@@ -1,0 +1,138 @@
+' Gambas class file
+
+Export
+
+Class Stock
+
+Static Private $cCache As New Collection
+
+Static Private Sub GetKey(sPath As String) As String
+  
+  Dim sKey As String
+  
+  If sPath Begins "icon:/" Then
+    
+    sKey = sPath
+    
+  Else If File.IsRelative(sPath) Then
+    
+    While sPath Begins "./"
+      sPath = Mid$(sPath, 3)
+    Wend
+    
+    sKey = Component.FindFromPath(".." &/ sPath)
+    If sKey Then sKey &= ":"
+    
+    While sPath Begins "../"
+      sPath = Mid$(sPath, 4)
+    Wend
+    sKey &= sPath
+    
+  Else
+    
+    sKey = sPath
+    
+  Endif
+  
+  Return sKey
+  
+End
+
+
+Static Public Sub _get(Path As String) As Picture
+  
+  Dim sKey As String
+  Dim hPict As Picture
+  Dim sPath As String
+  Dim sBaseName As String
+  Dim sDarkPath As String
+  Dim bMoveUp As Boolean
+  
+  If Not Path Then Return
+  
+  sKey = GetKey(Path)
+  hPict = $cCache[sKey]
+  If hPict Then Return hPict
+  
+  If Path Begins "icon:/" Then
+    
+    'Debug Path
+    Try hPict = Stock[Mid$(Path, 7)]
+    If Not hPict Then Return 
+    
+  Else
+    
+    sPath = Path
+    
+    If File.IsRelative(sPath) Then
+      If sPath Begins "./" Then
+        If sPath Not Begins "./gb." Then 
+          bMoveUp = True
+        Endif
+      Else 
+        bMoveUp = True
+      Endif
+    Endif
+    
+    If bMoveUp Then sPath = ".." &/ sPath
+    
+    ' Support for rtl/ltr icons
+    
+    sBaseName = File.BaseName(sPath)
+    If sBaseName Ends "-ltr" And If System.RightToLeft Then
+      sBaseName = Left(sBaseName, -4) & "-rtl"
+      sPath = File.SetBaseName(sPath, sBaseName)
+    Else If sBaseName Ends "-rtl" And If Not System.RightToLeft Then
+      sBaseName = Left(sBaseName, -4) & "-ltr"
+      sPath = File.SetBaseName(sPath, sBaseName)
+    Endif
+    
+    ' Support for dark themes
+    
+    If Application.DarkTheme Then
+      sDarkPath = File.SetBaseName(sPath, sBaseName & "-dark")
+      If Exist(sDarkPath) Then
+        Try hPict = Image.Load(sDarkPath).Picture
+      Else
+        Try hPict = Image.Load(sPath).Invert(True).Picture
+      Endif
+      If hPict Then Goto __LOAD_OK
+    Endif
+    
+    Try hPict = Image.Load(sPath).Picture
+    If Error Then
+      'Error "gb.gui: warning: unable to load icon "; Path; ": "; System.Backtrace.Join(" ")
+      Return Null
+    Endif
+  Endif
+  
+__LOAD_OK:
+  
+  $cCache[sKey] = hPict
+  Return hPict
+  
+End
+
+Static Public Sub _put(Value As Picture, Path As String)
+  
+  Dim sKey As String
+  
+  If Not Path Then Return
+  
+  sKey = GetKey(Path)
+  $cCache[sKey] = Value
+  
+End
+
+Static Public Sub Flush()
+  
+  $cCache.Clear
+  
+End
+
+Static Public Sub _exit()
+  
+  $cCache.Clear
+  
+End
+

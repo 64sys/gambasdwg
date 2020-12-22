@@ -1,0 +1,21 @@
+
+Compile and execute a Gambas server page script.
+
+Usage: gbw3 [options] [--] [<server page file> | - ]
+
+Options:
+  -b --buildonly  process and compile WebPage do not execute
+  -c --nocache    force the WebPage compilation (do not check cache)
+  -g --debug      add debugging information to application
+  -f --fast       use just-in-time compiler
+  -h --help       display this help
+  -L --license    display license
+  -t --trace      turns on tracing option during execution
+  -u --use        force components loading ('comp1,comp2...')
+  -U --unsafe     turn off all checks for address validation
+  -v --verbose    be verbose
+  -V --version    display version
+  -w --warnings   display warning during compile
+  
+  -  if set as WebPage name causes gbw to read the WebPage Source from stdin
+  -- Stops any further option processing

@@ -1,0 +1,59 @@
+' Gambas module file
+
+Export
+
+Public Sub MkDir(Path As String)
+
+  Dim sElt As String
+  Dim sMake As String = "/"
+
+  If Path Begins "~/" Then Path = User.Home &/ Mid$(Path, 3)
+
+  For Each sElt In Split(Path, "/")
+    sMake &/= sElt
+    If IsDir(sMake) Then Continue
+    Try Mkdir sMake
+  Next
+  
+  If Not Exist(Path) Or If Not IsDir(Path) Then Error.Raise("Cannot create directory")
+
+End
+
+Public Sub RmDir(Path As String, Optional Force As Boolean)
+
+  Dim sFile As String
+  
+  If Len(Path) > 1 And If Right(Path) = "/" Then Path = Left(Path, -1)
+  
+  If Not Force Then
+    If Path = "~" Or If Path = User.Home Or If Path = "/" Then Error.Raise("Removing this directory recursively is a bad idea: " & Path)
+  Endif
+  
+  For Each sFile In Dir(Path)
+    If IsDir(Path &/ sFile) Then
+      RmDir(Path &/ sFile)
+    Else
+      Kill Path &/ sFile
+    Endif
+  Next
+  
+  Rmdir Path
+  
+End
+
+Public Sub Move(Source As String, Destination As String, Optional Force As Boolean)
+  
+  If IsDir(Destination) Then Destination &/= File.Name(Source)
+  
+  If Force Then
+    Try Move Source Kill Destination
+  Else
+    Try Move Source To Destination
+  Endif
+  If Error Then
+    If Force Then Try Kill Destination
+    Copy Source To Destination
+    Kill Source
+  Endif
+  
+End

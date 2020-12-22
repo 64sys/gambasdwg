@@ -1,0 +1,368 @@
+' Gambas class file
+
+' Gambas class file
+
+Export
+
+'Static Private $cMenu As New Collection
+
+Static Private $aFrame As New Control[4]
+Static Private $hFrameCtrl As Control
+Static Private $hHideFrameTimer As Timer
+Static Private $iFrameX As Integer
+Static Private $iFrameY As Integer
+Static Private $bInFrame As Boolean
+
+Static Public Sub FindShortcut(sText As String) As Integer
+
+  Dim iPos As Integer
+  
+  Do
+    iPos = String.InStr(sText, "&", iPos + 1)
+    If iPos = 0 Then Break
+    If String.Mid$(sText, iPos + 1, 1) = "&" Then
+      Inc iPos
+      Continue
+    Endif
+    Return iPos
+  Loop
+  
+End
+
+Static Public Sub _DefineShortcut(hParent As Menu)
+
+  Dim hMenu As Menu
+  Dim sText As String
+  Dim cShortcut As New Collection
+  Dim I As Integer
+  Dim sCar As String
+  Dim iPos As Integer
+  'Dim hObs As Observer
+  'Dim cText As Collection
+  
+  'Return
+  
+  For Each hMenu In hParent.Children
+    
+    sText = hMenu.Text
+    If Not sText Then Continue
+    
+    iPos = String.InStr(sText, "&")
+    If iPos Then 
+      cShortcut[String.UCase(String.Mid$(sText, iPos + 1, 1))] = True
+      Continue
+    Endif
+    
+    For I = 1 To String.Len(sText)
+      
+      sCar = String.UCase(String.Mid$(sText, I, 1))
+      
+      If Len(sCar) = 1 And If Not IsLetter(sCar) And If Not IsDigit(sCar) Then Continue
+      
+      If Not cShortcut.Exist(sCar) Then
+        
+        ' If Not hObs Then
+        '   hObs = New Observer(hParent) As "Menu"
+        '   cText = New Collection
+        '   '$cMenu[Object.Address(hParent)] = cText
+        ' Endif
+        
+        hMenu.Text = String.Left(sText, I - 1) & "&" & String.Mid$(sText, I)
+        hMenu._Text = sText
+        cShortcut[sCar] = True
+        
+        Break
+      Endif
+    Next
+    
+    'If hMenu.Children.Count Then _DefineShortcut(hMenu)
+    
+  Next
+  
+End
+
+Static Public Sub _Quit()
+
+  Drag.Icon = Null
+  
+End
+
+' Static Private Sub RemoveShortcut(sText As String) As String
+' 
+'   Dim iPos As Integer
+'   
+'   iPos = FindShortcut(sText)
+'   If iPos Then sText = String.Left(sText, iPos - 1) & String.Mid(sText, iPos + 1)
+'   Return sText
+'   
+' End
+
+Static Public Sub _InitMenuBarShortcut(hWindow As Window)
+
+  Dim hMenu As Menu
+  Dim bVisible As Boolean
+  Dim sText As String
+  
+  bVisible = hWindow.Menus.Visible
+
+  For Each hMenu In hWindow.Menus
+    
+    If Not Object.IsValid(hMenu) Then Continue
+    If Not hMenu.Text Then Continue
+    
+    If bVisible Then
+      If hMenu._Text Then
+        hMenu.Text = hMenu._Text
+      Endif
+    Else 
+      If Not hMenu._Text Then
+        sText = hMenu.Text
+        hMenu.Text = " "
+        hMenu._Text = sText
+      Endif
+    Endif
+    
+  Next
+  
+End
+
+Static Private Sub StopHideFrameTimer()
+  
+  If $hHideFrameTimer Then
+    $hHideFrameTimer.Stop
+    $hHideFrameTimer = Null
+  Endif
+  
+End
+
+
+Static Public Sub _ShowDNDFrame(hCtrl As Control, X As Integer, Y As Integer, W As Integer, H As Integer)
+  
+  Dim I As Integer
+
+  'Debug hCtrl.Name;; X;; Y;; W;; H;; "|";; System.Backtrace.Join(" ")
+
+  StopHideFrameTimer
+  
+  For I = 0 To 3
+    If $aFrame[I] = hCtrl Then Return
+  Next
+  
+  If W < 0 Then W = hCtrl.W
+  If H < 0 Then H = hCtrl.H
+  
+  If hCtrl <> $hFrameCtrl Then
+  
+    HideDNDFrame()
+  
+    For I = 0 To 0
+      $aFrame[I] = New DrawingArea(hCtrl.Window) As "DNDFrame"
+      With $aFrame[I]
+        .Background = Color.SetAlpha(Color.SelectedBackground, 192)
+        .Ignore = True
+        .Drop = True
+        .Name = "#DndFrame" & CStr(I)
+        .Design = True
+        '.Enabled = False
+      End With
+    Next
+    
+  Endif
+  
+  If W <= 0 Or If H <= 0 Then 
+    For I = 0 To 0
+      $aFrame[I].Hide
+    Next
+    Return
+  Endif
+
+  $iFrameX = X
+  $iFrameY = Y
+
+  X += hCtrl.ScreenX - hCtrl.Window.ScreenX - hCtrl.Window.ClientX
+  Y += hCtrl.ScreenY - hCtrl.Window.ScreenY - hCtrl.Window.ClientY
+
+  'X -= 2
+  'Y -= 2
+  'W += 4
+  'H += 4
+  
+  With $aFrame[0]
+    If Not .Visible Or If .X <> X Or If .Y <> Y Or If .W <> W Or If .H <> H Then 
+      'Debug hCtrl.Name;; X;; Y;; W;; H
+      .Move(X, Y, W, H) 
+      .Raise
+      .Show
+    Endif
+  End With
+  
+  $hFrameCtrl = hCtrl
+  
+End
+
+Static Private Sub HideDNDFrame()
+
+  Dim I As Integer
+  
+  For I = 0 To 3
+    Try $aFrame[I].Delete
+    $aFrame[I] = Null
+  Next
+  $hFrameCtrl = Null
+  $bInFrame = False
+  
+End
+
+Static Public Sub _HideDNDFrame(Optional hCtrl As Control)
+
+  Dim I As Integer
+  
+  If Not $hFrameCtrl Then Return
+
+  ' If hCtrl Then
+  '   Try Debug hCtrl.Name;; $hFrameCtrl.Name;; $hFrameCtrl.Hovered;; "|";; System.Backtrace.Join(" ")
+  ' Else
+  '   Try Debug "NULL";; $hFrameCtrl.Name;; $hFrameCtrl.Hovered;; "|";; System.Backtrace.Join(" ")
+  ' Endif
+  
+  If $bInFrame Then Return
+  'If hCtrl = $hFrameCtrl Then Return
+  
+  If hCtrl Then
+    For I = 0 To 3
+      If $aFrame[I] = hCtrl Then
+        hCtrl = $hFrameCtrl
+        Break
+      Endif
+    Next
+    If hCtrl <> $hFrameCtrl Then Return
+  Endif
+  
+  If Not $hHideFrameTimer Then $hHideFrameTimer = New Timer(50) As "HideFrameTimer"
+  'Debug Timer
+  $hHideFrameTimer.Restart
+  
+End
+
+Static Public Sub HideFrameTimer_Timer()
+  
+  'Debug Timer
+  HideDNDFrame
+  $hHideFrameTimer.Stop
+  $hHideFrameTimer = Null
+  
+End
+
+Static Public Sub DndFrame_Drag()
+  
+  Dim X As Integer
+  Dim Y As Integer
+  
+  $bInFrame = True
+  StopHideFrameTimer
+  
+  X = Drag.X
+  Y = Drag.Y
+  
+  Drag.X += $iFrameX
+  Drag.Y += $iFrameY
+  
+  Object.Raise($hFrameCtrl, "Drag")
+  
+  Drag.X = X
+  Drag.Y = Y
+  
+End
+
+Static Private Sub FindChild(hCont As Container, X As Integer, Y As Integer) As Control
+
+  Dim hChild As Control
+  
+  For Each hChild In hCont.Children
+    If hChild = $aFrame[0] Then Continue
+    If hChild.X > X Or If hChild.Y > Y Or If (hChild.X + hChild.W) <= X Or If (hChild.Y + hChild.H) <= Y Then Continue
+    Return hChild
+  Next
+  
+End
+
+Static Public Sub DndFrame_DragMove()
+  
+  Dim hCont As Container
+  Dim hCtrl As Control
+  Dim X As Integer
+  Dim Y As Integer
+
+  'Debug
+
+  $bInFrame = True
+  StopHideFrameTimer
+  
+  Drag.X += $iFrameX
+  Drag.Y += $iFrameY
+
+  hCtrl = $hFrameCtrl
+
+  While hCtrl Is Container 
+    hCont = hCtrl
+    '$aFrame[0].Hide
+    'hCtrl = hCont.FindChild(Drag.X - hCont.ClientX, Drag.Y - hCont.ClientY)
+    '$aFrame[0].Show
+    hCtrl = FindChild(hCont, Drag.X - hCont.ClientX, Drag.Y - hCont.ClientY)
+    
+    If Not hCtrl Then
+      hCtrl = hCont
+      Break
+    Endif
+    
+    Drag.X -= hCtrl.X + hCont.ClientX
+    Drag.Y -= hCtrl.Y + hCont.ClientY
+    If hCtrl.Drop Then
+      Object.Raise(hCtrl, "Drag")
+    Else
+      If hCtrl Is Container Then Continue
+      Drag.X += hCtrl.X + hCont.ClientX
+      Drag.Y += hCtrl.Y + hCont.ClientY
+      hCtrl = hCont
+    Endif
+    
+    Break
+    
+  Wend
+  
+  Object.Raise(hCtrl, "DragMove")
+  
+  Drag.X = X
+  Drag.Y = Y
+  
+End
+
+Static Public Sub DndFrame_Drop()
+
+  'Debug
+  Drag.X += $iFrameX
+  Drag.Y += $iFrameY
+  Drag._Target = $hFrameCtrl
+  Object.Raise($hFrameCtrl, "Drop")
+  Drag.X -= $iFrameX
+  Drag.Y -= $iFrameY
+
+End
+
+Static Public Sub DndFrame_DragLeave()
+  
+  Dim hCtrl As Control
+  
+  $bInFrame = False
+  _HideDNDFrame
+  
+  hCtrl = $hFrameCtrl
+  While hCtrl
+    If Not Mouse.Inside(hCtrl) Then 
+      Object.Raise($hFrameCtrl, "DragLeave")
+      Break
+    Endif
+    hCtrl = hCtrl.Parent
+  Wend
+  
+End

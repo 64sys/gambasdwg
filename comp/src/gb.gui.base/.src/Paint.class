@@ -1,0 +1,483 @@
+' Gambas class file
+
+Export
+
+Static Private $fLastWidth As Float
+Static Private $sLastFont As String
+
+Static Private Sub AddThreeDots(sStr As String) As String
+  
+  While InStr(". \n", Right(sStr))
+    sStr = Left(sStr, -1)
+  Wend
+  Return sStr & "…"
+  
+End
+
+
+Static Public Sub TrimText(Text As String, W As Float, Optional H As Float) As String
+  
+  Dim I, S, L As Integer
+  Dim HL As Integer = Paint.Font.Height
+  Dim sLine As String
+  Dim sSep As String
+  Dim sCar As String
+  Dim SL As Integer
+  Dim WT As Integer
+  Dim HT As Integer
+  
+  If Not Text Then Return
+  
+  If H = 0 Then H = HT
+  HT = HL
+  SL = 1
+  L = String.Len(Text)
+  
+  For I = 1 To L
+    
+    sCar = String.Mid$(Text, I, 1)
+    If I < L And If InStr(" \n", sCar) = 0 Then Continue
+    
+    sLine = String.Mid$(Text, SL, I - SL)
+    
+    If (HT + HL) > H Then
+      WT = Paint.Font.TextWidth(sLine & "…")
+      If WT > W Then
+        Return AddThreeDots(String.Left(Text, S - 1))
+      Else If sCar = "\n" Then
+        Return AddThreeDots(String.Left(Text, I - 1))
+      Endif
+    Else
+      WT = Paint.Font.TextWidth(sLine)
+      If WT > W Then
+        Text = String.Left(Text, S - 1) & "\n" & String.Mid$(Text, S + 1)
+        HT += HL
+        SL = S + 1
+        Dec I
+      Endif
+    Endif
+    
+    sSep = sCar
+    S = I
+    If sSep = "\n" Then HT += HL
+    
+  Next
+  
+  Return Text
+  
+End
+
+Static Private Sub HtmlLeft(sHtml As String, iPos As Integer) As String
+
+  Dim sRes As String
+  Dim bMarkup As Boolean
+  Dim sCar As String
+  Dim I As Integer
+
+  For I = 1 To String.Len(sHtml)
+    sCar = String.Mid(sHtml, I, 1)
+    If sCar = "<" Then
+      bMarkup = True
+      sRes &= sCar
+      Continue
+    Else If sCar = ">" Then
+      bMarkup = False
+      sRes &= sCar
+      Continue
+    Endif
+    If bMarkup Or If I <= iPos Then sRes &= sCar
+  Next
+
+  Return sRes
+  
+End
+
+Static Public Sub TrimRichText(RichText As String, W As Float, Optional H As Float) As String
+  
+  Dim I As Integer
+  Dim sCar As String
+  Dim bMarkup As Boolean
+  
+  If Not RichText Then Return
+  If H = 0 Then H = Paint.Font.Height
+  
+  For I = 1 To String.Len(RichText)
+    sCar = String.Mid(RichText, I, 1)
+    If sCar = "<" Then
+      bMarkup = True
+    Else If sCar = ">" Then
+      bMarkup = False
+    Endif
+    If bMarkup Then Continue
+    If Paint.Font.RichTextHeight(HtmlLeft(RichText, I) & "…", W) > H Then Break
+  Next
+  
+  Return HtmlLeft(RichText, I - 1) & "…"
+  
+End
+
+Static Public Sub DrawTextShadow(Text As String, X As Float, Y As Float, W As Float, H As Float, Optional Alignment As Integer = Align.TopLeft, Optional Radius As Integer = -1, Optional Opacity As Float = 0.5)
+  
+  Dim hShadow As Image
+  Dim hFont As Font
+  Dim hBrush As PaintBrush
+  Dim DX, DY As Integer
+  Dim iBackground As Integer
+  
+  hFont = Paint.Font
+  iBackground = Paint.Background
+  hBrush = Paint.Brush
+  
+  If Radius < 0 Then Radius = Max(1, hFont.Height \ 8)
+  Radius = Min(256, Radius)
+  
+  With Paint.TextSize(Text)
+
+    hShadow = New Image(Ceil(.W) + 2 + Radius * 2, Ceil(.H) + 2 + Radius * 2, Color.Transparent)
+
+    DX = W - .W
+    DY = H - .H
+  
+    Paint.Begin(hShadow)
+    
+    Paint.Font = hFont
+    Paint.Background = iBackground
+    Paint.Brush = hBrush
+
+    If Align.IsCenter(Alignment) Then
+      DX /= 2
+    Else If Align.IsLeft(Alignment) Then
+      DX = 0
+    Endif
+    
+    If Align.IsMiddle(Alignment) Then
+      DY /= 2
+    Else If Align.IsTop(Alignment) Then
+      DY = 0
+    Endif
+  
+    Paint.DrawText(Text, Radius - DX, Radius - DY, W, H, Alignment)
+    Paint.End
+    hShadow.Fuzzy(Radius)
+    
+  End With
+  
+  Paint.DrawImage(hShadow, X + DX - Radius, Y + DY - Radius,,, Opacity)
+  
+End
+
+Static Public Sub DrawRichTextShadow(Text As String, X As Float, Y As Float, W As Float, H As Float, Optional Alignment As Integer = Align.TopLeft, Optional Radius As Integer = -1, Optional Opacity As Float = 0.5)
+  
+  Dim hShadow As Image
+  Dim hFont As Font
+  Dim hBrush As PaintBrush
+  Dim DX, DY As Integer
+  Dim iBackground As Integer
+  
+  hFont = Paint.Font
+  iBackground = Paint.Background
+  hBrush = Paint.Brush
+  
+  If Radius < 0 Then Radius = Max(1, hFont.Height \ 8)
+  Radius = Min(256, Radius)
+  
+  With Paint.RichTextSize(Text, W)
+
+    hShadow = New Image(Ceil(.W) + 2 + Radius * 2, Ceil(.H) + 2 + Radius * 2, Color.Transparent) '&HFF000000)
+    
+    DX = W - .W
+    DY = H - .H
+  
+    Paint.Begin(hShadow)
+    Paint.Font = hFont
+    Paint.Background = iBackground
+    Paint.Brush = hBrush
+
+    If Align.IsCenter(Alignment) Then
+      DX /= 2
+    Else If Align.IsLeft(Alignment) Then
+      DX = 0
+    Endif
+    
+    If Align.IsMiddle(Alignment) Then
+      DY /= 2
+    Else If Align.IsTop(Alignment) Then
+      DY = 0
+    Endif
+  
+    Paint.DrawRichText(Text, Radius - DX, Radius - DY, W, H, Alignment)
+    Paint.End
+    hShadow.Fuzzy(Radius)
+    
+  End With
+  
+  Paint.DrawImage(hShadow, X + DX - Radius, Y + DY - Radius,,, Opacity)
+  
+End
+
+Static Public Sub StretchImage((Image) As Image, X As Float, Y As Float, Width As Float, Height As Float, Optional Alignment As Integer = Align.Center, Optional Opacity As Float = 1, Optional Source As Rect)
+  
+  Dim W As Float
+  Dim H As Float
+  Dim S As Float
+  
+  If Source Then
+    W = Source.W
+    H = Source.H
+  Else
+    W = Image.W
+    H = Image.H
+  Endif
+  
+  If W <= 0 Or If H <= 0 Then Return
+  
+  S = Min(Width / W, Height / H)
+  W *= S
+  H *= S
+  
+  If Align.IsRight(Alignment) Then
+    X += Width - W
+  Else If Align.IsCenter(Alignment) Then
+    X += (Width - W) / 2
+  Endif
+  
+  If Align.IsBottom(Alignment) Then
+    Y += Height - H
+  Else If Align.IsMiddle(Alignment) Then
+    Y += (Height - H) / 2
+  Endif
+  
+  Paint.DrawImage(Image, X, Y, W, H, Opacity, Source)
+  
+End
+
+Static Public Sub DrawRect(X As Float, Y As Float, Width As Float, Height As Float, (Color) As Integer, Optional Size As Float = 1)
+  
+  If Size = 0 Then Return
+  
+  If Size < 0 Then
+    Size = -Size
+    X -= Size
+    Y -= Size
+    Width += Size * 2
+    Height += Size * 2
+  Endif
+  
+  If Size >= Min(Width, Height) / 2 Then
+    Paint.FillRect(X, Y, Width, Height, Color)
+    Return
+  Endif
+  
+  Paint.Save
+  Paint.Rectangle(X, Y, Width, Size)
+  Paint.Rectangle(X + Width - Size, Y + Size, Size, Height - Size)
+  Paint.Rectangle(X, Y + Height - Size, Width - Size, Size)
+  Paint.Rectangle(X, Y + Size, Size, Height - Size * 2)
+  Paint.Background = Color
+  Paint.Fill
+  Paint.Restore
+  
+End
+
+Static Public Sub _EstimateFixedFontCharWidth(hFont As Font) As Float
+
+  Dim iSpaceWidth As Integer
+  Dim I As Integer
+  Dim sText As String
+  Dim sFont As String
+
+  sFont = hFont.ToString()
+  If sFont = $sLastFont Then Return $fLastWidth
+  
+  $sLastFont = sFont
+  
+  iSpaceWidth = hFont.TextWidth(" ")
+  
+  For I = 33 To 255
+    If I > 126 And If I < 160 Then Continue
+    If I = 173 Then Continue
+    If hFont.TextWidth(String.Chr$(I)) <> iSpaceWidth Then 
+      $fLastWidth = 0
+      Return 0
+    Endif
+  Next
+  
+  sText = String$(4, "AbCdEfGh01#@WwmM")
+  $fLastWidth = hFont.TextWidth(sText) / Len(sText)
+  Return $fLastWidth
+  
+End
+
+
+' Static Public Debug As Boolean
+' 
+' Static Public Sub MoveTo(X As Float, Y As Float)
+'   
+'   Super.MoveTo(X, Y)
+'   If {Debug} Then Print "MoveTo("; CStr(X); ","; CStr(Y); ")"
+'   
+' End
+' 
+' Static Public Sub LineTo(X As Float, Y As Float)
+'   
+'   Super.LineTo(X, Y)
+'   If {Debug} Then Print "LineTo("; CStr(X); ","; CStr(Y); ")"
+'   
+' End
+' 
+' Static Public Sub CurveTo(X1 As Float, X2 As Float, Y1 As Float, Y2 As Float, X3 As Float, Y3 As Float)
+'   
+'   Super.CurveTo(X1, X2, Y1, Y2, X3, Y3)
+'   If {Debug} Then Print "CurveTo("; CStr(X1); ","; CStr(Y1); ","; CStr(X2); ","; CStr(Y2); ","; CStr(X3); ","; CStr(Y3); ")"
+'   
+' End
+' 
+' 
+' Static Public Sub Clip(Optional Preserve As Boolean)
+'   
+'   If {Debug} Then 
+'     With Paint.ClipExtents
+'       Print "Clip() ["; CStr(.X); ","; CStr(.Y); ","; CStr(.Width); ","; CStr(.Height); "] -> ";
+'     End With
+'   Endif
+'   Super.Clip(Preserve)
+'   If {Debug} Then 
+'     With Paint.ClipExtents
+'       Print "["; CStr(.X); ","; CStr(.Y); ","; CStr(.Width); ","; CStr(.Height); "]"
+'     End With
+'   Endif
+'   
+' End
+' 
+' Static Public Sub Restore()
+'   
+'   If {Debug} Then 
+'     With Paint.ClipExtents
+'       Print "Restore() ["; CStr(.X); ","; CStr(.Y); ","; CStr(.Width); ","; CStr(.Height); "] -> ";
+'     End With
+'   Endif
+'   Super.Restore
+'   If {Debug} Then 
+'     With Paint.ClipExtents
+'       Print "["; CStr(.X); ","; CStr(.Y); ","; CStr(.Width); ","; CStr(.Height); "]"
+'     End With
+'   Endif
+'   
+' End
+' 
+' Static Public Sub Rectangle(X As Float, Y As Float, W As Float, H As Float, Optional R As Float)
+'   
+'   Super.Rectangle(X, Y, W, H, R)
+'   If {Debug} Then
+'     Print "Rectangle("; CStr(X); ","; CStr(Y); ","; CStr(W); ","; CStr(H);
+'     If R Then Print ","; CStr(R);
+'     Print ")"
+'   Endif
+'   
+' End
+' 
+
+' Static Public Sub Cross(X As Float, Y As Float, Width As Float, Height As Float, Size As Float)
+' 
+'   Dim XC As Float
+'   Dim YC As Float
+'   Dim DH As Float
+'   Dim DW As Float
+'   
+'   XC = X + Width / 2
+'   YC = Y + Width / 2
+'   
+'   DW = (Width - Size) / 2
+'   DH = (Height - Size) / 2
+'   
+'   Paint.MoveTo(XC - Size / 2, Y)
+'   Paint.RelLineTo(Size, 0)
+'   Paint.RelLineTo(0, DH)
+'   Paint.RelLineTo(DW, 0)
+'   Paint.RelLineTo(0, Size)
+'   Paint.RelLineTo(- DW, 0)
+'   Paint.RelLineTo(0, DH)
+'   Paint.RelLineTo(- Size, 0)
+'   Paint.RelLineTo(0, - DH)
+'   Paint.RelLineTo(- DW, 0)
+'   Paint.RelLineTo(0, - Size)
+'   Paint.RelLineTo(DW, 0)
+'   Paint.RelLineTo(0, - DH)
+'   
+' End
+' 
+
+Static Public Sub Arrow(X As Float, Y As Float, Width As Float, Height As Float, Orientation As Integer, Optional Alignment As Integer = Align.Center)
+
+  Dim SX, SY As Float
+
+  SX = Min(Width / 2, Height / 2) / 2
+  If SX <= 0 Then Return
+  SY = SX * 2
+  
+  If Orientation = Align.Top Or If Orientation = Align.Bottom Then Swap SX, SY
+  
+  If Align.IsLeft(Alignment) Then
+    X = SX
+  Else If Align.IsRight(Alignment) Then
+    X = Width - SX
+  Else
+    X += Width / 2
+  Endif
+  
+  If Align.IsTop(Alignment) Then
+    Y = SY
+  Else If Align.IsBottom(Alignment) Then
+    Y = Height - SY
+  Else
+    Y += Height / 2
+  Endif
+  
+  Width = SX * 2
+  Height = SY * 2
+  
+  Select Case Orientation
+    
+    Case Align.Top
+    
+      Paint.MoveTo(X - SX, Y + SY)
+      Paint.RelLineTo(SX, -SY * 2)
+      Paint.RelLineTo(SX, SY * 2)
+    
+    Case Align.Bottom
+    
+      Paint.MoveTo(X - SX, Y - SY)
+      Paint.RelLineTo(SX, SY * 2)
+      Paint.RelLineTo(SX, -SY * 2)
+    
+    Case Align.Left
+    
+      Paint.MoveTo(X + SX, Y - SY)
+      Paint.RelLineTo(-SX * 2, SY)
+      Paint.RelLineTo(SX * 2, SY)
+    
+    Case Align.Right
+    
+      Paint.MoveTo(X - SX, Y - SY)
+      Paint.RelLineTo(SX * 2, SY)
+      Paint.RelLineTo(-SX * 2, SY)
+    
+  End Select
+  
+End
+
+Static Public Sub Check(X As Float, Y As Float, Width As Float, Height As Float)
+  
+  Dim D As Float
+  
+  D = Min(Width / 3, Height / 2)
+  
+  X += (Width - D * 3) / 2
+  Y += (Height - D * 2) / 2
+  
+  Paint.MoveTo(X, Y + D)
+  Paint.RelLineTo(D, D)
+  Paint.RelLineTo(D * 2, -D * 2)
+  
+End
+

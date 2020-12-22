@@ -1,0 +1,61 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(36,28,79,51)
+  Text = ("Server Socket Example")
+  Icon = Picture["serversocket.png"]
+  Resizable = False
+  { btnListen Button
+    MoveScaled(60,1,18,4)
+    Text = ("Listen")
+  }
+  { txtPort TextBox
+    MoveScaled(16,6,43,4)
+    Text = ("32340")
+  }
+  { txtLog TextArea
+    MoveScaled(1,22,77,28)
+  }
+  { btnClose Button
+    MoveScaled(60,6,18,4)
+    Enabled = False
+    Text = ("Close")
+  }
+  { TextLabel1 TextLabel
+    MoveScaled(1,6,14,4)
+    Text = ("Port")
+  }
+  { btnPause Button
+    MoveScaled(1,17,16,4)
+    Text = ("Pause")
+  }
+  { Label1 Label
+    MoveScaled(18,17,38,4)
+    Text = ("Max. number of clients")
+    Alignment = Align.Right
+  }
+  { cmbMaxClient ComboBox
+    MoveScaled(57,17,21,4)
+    ReadOnly = True
+    List = [("No limit"), ("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10")]
+  }
+  { TextLabel2 TextLabel
+    MoveScaled(1,1,14,4)
+    Text = ("Type")
+  }
+  { cmbType ComboBox
+    MoveScaled(16,1,43,4)
+    ReadOnly = True
+    List = [("TCP"), ("UNIX")]
+  }
+  { TextLabel3 TextLabel
+    MoveScaled(1,11,14,4)
+    Text = ("Path")
+  }
+  { txtPath TextBox
+    MoveScaled(16,11,62,4)
+  }
+  { MyServerSocket #ServerSocket
+    #MoveScaled(8,3)
+  }
+}

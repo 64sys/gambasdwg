@@ -1,0 +1,148 @@
+' Gambas class file
+
+Export
+Inherits UserControl
+
+Event Change
+Event Click
+
+Property Color, Value As Integer
+Property Border As Boolean
+
+Public Const _Properties As String = "*,Value{Color},Border=True"
+Public Const _DefaultEvent As String = "Click"
+Public Const _DefaultSize As String = "8,4"
+
+Private $iColor As Integer
+Private $hDrawingArea As DrawingArea
+Private $bBorder As Boolean = True
+Private $bPressed As Boolean
+Private $bInside As Boolean
+
+Public Sub _new()
+
+  $hDrawingArea = New DrawingArea(Me) As "DrawingArea"
+
+  $hDrawingArea.Focus = True
+  
+  $bBorder = True
+
+  Me.Proxy = $hDrawingArea
+  
+End
+
+Public Sub DrawingArea_Draw()
+  
+  Dim W, H As Integer
+  Dim F As Integer = If($bBorder, Style.FrameWidth, 0)
+  Dim bPressed As Boolean
+  
+  bPressed = $bPressed And $bInside
+  
+  Style.PaintButton(0, 0, Paint.W, Paint.H, bPressed, Style.StateOf(Last), Not $bBorder)
+  
+  F = F * 2 + 4
+  
+  W = Paint.W - F * 2
+  H = Paint.H - F * 2
+  If W <= 0 Or If H <= 0 Then Return
+  
+  'Paint.FillRect(F, F, W, H, $iColor)
+  If bPressed Then Inc F
+  Style.PaintBox(F, F, W, H, Style.Normal, $iColor)
+  
+End
+
+Private Function Color_Read() As Integer
+
+  Return $iColor
+
+End
+
+Private Sub Color_Write(iColor As Integer)
+
+  If iColor = $iColor Then Return
+  $iColor = iColor
+  Me.Refresh
+  Raise Change
+
+End
+
+Public Sub DrawingArea_MouseDown()
+
+  $bPressed = True
+  $bInside = True
+  $hDrawingArea.Refresh
+  
+End
+
+Public Sub DrawingArea_MouseMove()
+  
+  Dim bInside As Boolean
+  
+  If Mouse.X >= 0 And If Mouse.X < $hDrawingArea.W And If Mouse.Y >= 0 And If Mouse.Y < $hDrawingArea.H Then
+    bInside = True
+  Else
+    bInside = False
+  Endif
+  
+  If bInside <> $bInside Then
+    $bInside = bInside
+    Me.Refresh
+  Endif
+  
+End
+
+Public Sub DrawingArea_MouseUp()
+
+  If $bPressed And $bInside Then
+    Dialog.Color = $iColor
+    If Not Dialog.SelectColor() Then 
+      Color_Write(Dialog.Color)
+      Raise Click
+    Endif
+  Endif
+
+  $bPressed = False
+  $bInside = False
+  Me.Refresh
+  
+End
+
+Public Sub DrawingArea_Enter()
+  
+  Me.Refresh
+  
+End
+
+Public Sub DrawingArea_Leave()
+  
+  Me.Refresh
+  
+End
+
+Public Sub DrawingArea_GotFocus()
+  
+  Me.Refresh
+  
+End
+
+Public Sub DrawingArea_LostFocus()
+  
+  Me.Refresh
+  
+End
+
+
+Private Function Border_Read() As Boolean
+
+  Return $bBorder
+
+End
+
+Private Sub Border_Write(Value As Boolean)
+
+  $bBorder = Value
+  Me.Refresh
+
+End

@@ -1,0 +1,118 @@
+' Gambas class file
+
+Private $bNoSelectButton As Boolean
+
+Public Sub ReadConfig()
+  
+  Project.SetSmallFont(Me)
+  Me.H = Me.Font.H + 8
+  
+End
+
+Public Sub UpdateView()
+  
+  btnConsole.Visible = Not IsNull(FOutput.Parent)
+  OnVisibilityChange
+  
+End
+
+Public Sub OnVisibilityChange()
+  
+  Dim hButton As ToolButton
+  
+  If FMain.IsDebugVisible() Then
+    SelectButton(FDebugInfo.GetCurrentTab())
+  Else
+    For Each hButton In Me.Children
+      hButton.Value = False
+    Next
+  Endif
+  
+End
+
+Public Sub btnDebug_Click()
+
+  Dim hLast As ToolButton = Last
+  Dim hButton As ToolButton 
+  Dim I As Integer
+  
+  If hLast.Value Then
+    
+    FMain.ShowDebug(True)
+    
+    For I = 0 To Me.Children.Count - 1
+      hButton = Me.Children[I]
+      If hButton <> hLast Then
+        Object.Lock(hButton)
+        hButton.Value = False
+        Object.Unlock(hButton)
+      Else
+        FDebugInfo.SelectTab(I)
+      Endif
+    Next
+    
+  Else
+    
+    FMain.ShowDebug(False)
+    
+  Endif
+  
+  
+End
+
+Public Sub SelectButton(iTab As Integer)
+
+  Dim hButton As ToolButton = Me.Children[iTab]
+  
+  If $bNoSelectButton Then Return
+
+  $bNoSelectButton = True
+  If Not hButton.Value Then hButton.Value = True
+  $bNoSelectButton = False
+  
+End
+
+Public Sub ShowButton(iTab As Integer, bShow As Boolean)
+  
+  Dim hButton As ToolButton = Me.Children[iTab]
+  If hButton.Value And If Not bShow Then FMain.ShowDebug(False)
+  hButton.Visible = bShow
+  
+End
+
+Public Sub Form_Arrange()
+
+  FOutput.UpdateWidth(Me.W)
+
+End
+
+Public Sub OnRefreshSources()
+  
+  btnTest.Visible = Project.HasTest()
+  
+End
+
+Public Sub OnProjectChange()
+  
+  'btnTest.Picture = Picture["icon:/small/ok"]
+  
+End
+
+Public Sub SetTestResult(bFail As Boolean)
+  
+  'btnTest.Picture = Picture["icon:/small/" & If(bFail, "error", "apply")]
+  If bFail Then Balloon.Error(("Test has failed."), btnTest)
+  'If $hTimerReset Then $hTimerReset.Stop
+  '$hTimerReset = New Timer(5000) As "TimerReset"
+  
+End
+
+' Public Sub TimerReset_Timer()
+'   
+'   OnProjectChange
+'   $hTimerReset.Stop
+'   $hTimerReset = Null
+'   
+' End
+' 
+' 

@@ -1,0 +1,14 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,32.125,49.375)
+  Arrangement = Arrange.Vertical
+  Spacing = True
+  { panTool ScrollView
+    MoveScaled(3,6,21,30)
+    Expand = True
+    Arrangement = Arrange.Row
+    Border = False
+    ScrollBar = Scroll.Vertical
+  }
+}

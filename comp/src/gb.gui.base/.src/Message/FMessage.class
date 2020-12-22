@@ -1,0 +1,106 @@
+' Gambas class file
+
+Static Private $iButton As Integer
+
+Public Sub Run(sIcon As String, sText As String, aButton As String[]) As Integer
+
+  Dim DS As Integer = Desktop.Scale
+  Dim sTitle As String
+  Dim hPict As Picture
+  Dim H As Integer
+  Dim W As Integer
+  Dim I As Integer
+  Dim hButton As Button
+  Dim iBusy As Integer
+  Dim WB As Integer
+  Dim HT As Integer
+  Dim hSpace As Spring
+
+  sTitle = Message.Title
+  If Not sTitle Then sTitle = Application.Title
+  Message.Title = ""
+  Me.Title = sTitle
+  
+  Do
+    If aButton.Count = 0 Then
+      aButton = [("OK")]
+      Break
+    Endif
+    If aButton.Last Then Break
+    aButton.Pop()
+  Loop
+  
+  hPict = Picture["icon:/64/" & sIcon]
+  If Not hPict Then hPict = Picture["./gb.gui.base/message" &/ sIcon & ".png"]
+  If Not hPict Then hPict = Picture["./gb.gui.base/message/info.png"]
+  picMessage.Picture = hPict
+  
+  sText = Replace(sText, "\n", "<br>")
+  
+  txtMessage.Ignore = True
+  txtMessage.W = Screen.AvailableWidth \ 4
+  txtMessage.Text = sText
+  txtMessage.Adjust
+  HT = txtMessage.H
+  txtMessage.Ignore = False
+  
+  H = 0
+  For I = 0 To aButton.Max
+    hButton = New Button(panButton) As "Button"
+    hButton.Tag = I
+    hButton.Text = aButton[I]
+    hButton.W = Max(DS * 14, hButton.Font.TextWidth(hButton.Text) + DS * 2)
+    H = Max(H, hButton.Font.TextHeight(hButton.Text))
+    WB += hButton.W + DS
+    If I = 0 Then hButton.SetFocus()
+    If I = aButton.Max Then hButton.Cancel = True
+  Next
+  hSpace = New Spring(panButton)
+  panButton.H = Max(H, DS * 4)
+  
+  W = Max(DS * 32, Max(txtMessage.W + 1, WB) + picMessage.W + DS * 4)
+  H = Max(DS * 8, HT) + panButton.H + DS * 5
+  
+  Me.Resize(W, H)
+  
+  If Application.ActiveWindow Then Me.SkipTaskbar = True
+  
+  $iButton = aButton.Max
+  
+  iBusy = Application.Busy
+  Application.Busy = 0
+  Me.ShowModal()
+  Application.Busy = iBusy
+
+  Return $iButton + 1
+
+End
+
+Public Sub Button_Click()
+  
+  $iButton = Last.Tag
+  Me.Close
+  
+End
+
+Public Sub Form_KeyPress()
+
+  Dim hButton As Button
+  
+  If Key.Code = Key.Return Or If Key.Code = Key.Enter Then
+    Try hButton = Application.ActiveControl
+    If hButton Then 
+      hButton.Value = True
+      Stop Event
+    Endif
+  Endif
+
+End
+
+Public Sub mnuCopy_Click()
+
+  Component.Load("gb.util")
+  Clipboard.Copy(String.FromHTML(txtMessage.Text))
+
+End
+

@@ -1,0 +1,366 @@
+' Gambas class file
+
+Static Private BACKGROUND_COLOR As Integer = Project.COLOR_BLUE
+Static Private TEXT_COLOR As Integer = Project.COLOR_ORANGE
+
+Public NoTear As Boolean
+
+Private $hLogo As Image
+Private $hText As Image
+
+Private $hObs As Observer
+
+Private $hTimer As Timer
+Private $hSnow As Image
+Private $aSnowFlakes As New CSnowFlake[]
+Private MAX_SNOW_FLAKES As Integer = 250
+Private $aImage As Image[]
+Private $bIgnoreTree As Boolean
+Private $bSnow As Boolean
+
+Private $aTears As New CTear[]
+Private $bTear As Boolean
+Private $hTear As Image
+Private $iTearAge As Integer
+
+Public Sub _new(hDrawingArea As DrawingArea, Optional bHasTear As Boolean)
+  
+  Dim hSnowFlake As Image
+  Dim I As Integer
+  Dim dNow As Date
+  
+  hDrawingArea.Background = BACKGROUND_COLOR
+  
+  $hObs = New Observer(hDrawingArea) As "dwgWelcome"
+  
+  dNow = Now
+  If dNow >= Date(Year(dNow), 12, 25) Then
+  
+    hSnowFlake = Image.Load("welcome/snowflake.png")
+    $aImage = New Image[8]
+    For I = 0 To $aImage.Max
+      $aImage[I] = hSnowFlake.Stretch(I + 1, I + 1)
+    Next
+    
+    $bSnow = True
+    
+  Endif
+  
+  $bTear = bHasTear
+
+  If $bSnow Or If $bTear Then  
+    $hTimer = New Timer As "SnowTimer"
+    $hTimer.Delay = 50
+  Endif
+  
+End
+
+Static Public Sub PaintText(sText As String, X As Integer, Y As Integer, iColor As Integer) As Integer
+  
+  Dim XR As Integer
+  Dim hShadow As Image
+  Dim hSize As RectF
+  Dim hFont As Font
+  Dim iRadius As Integer
+  
+  hSize = Paint.TextSize(sText)
+  iRadius = Ceil(hSize.H / 4)
+  
+  hShadow = New Image(hSize.W + iRadius * 2, hSize.H + iRadius * 2, Color.Rgb(0, 0, 0, 255))
+  
+  hFont = Paint.Font
+  Paint.Begin(hShadow)
+  Paint.Font = hFont
+  Paint.Brush = Paint.Color(Color.Black)
+  Paint.Text(sText, iRadius, iRadius, hSize.W, hSize.H)
+  Paint.Fill
+  Paint.End
+  
+  hShadow.Fuzzy(iRadius)
+
+  Paint.DrawImage(hShadow, X - iRadius, Y - iRadius - Paint.Font.Ascent)
+
+  Paint.Brush = Paint.Color(iColor)
+  Paint.Text(sText, X, Y)
+  XR = X + Paint.PathExtents.Width
+  Paint.Fill
+
+  Return XR
+  
+End
+
+
+Public Sub dwgWelcome_Draw()
+
+  Dim X, Y As Integer
+  Dim hDrawingArea As DrawingArea = $hObs.Object
+  Dim I, S As Integer
+  Dim hSnowFlake As CSnowFlake
+  Dim hFir As Image
+  Dim sText As String
+  Dim sVersion As String
+  Dim hTear As CTear
+  Dim R As Float
+  Dim iAge As Integer
+  Dim XT As Float
+  Dim DXT As Float
+  Dim YT As Float
+  Dim J As Integer
+  Dim bDraw As Boolean
+  Dim DYT As Float
+  Dim iLum As Integer
+   
+  If Not $hLogo Then 
+    
+    'hSvgLogo = SvgImage.Load("img/logo/gambas.svg")
+    '$hLogo = New Image(hSvgLogo.Width, 256, Color.Transparent)
+    $hLogo = Image.Load("img/logo/head-256.png")
+    'Paint.Begin($hLogo)
+    'Paint.Scale(1.1, 1.1)
+    'hSvgLogo.Paint
+    'Paint.End
+    
+    $hText = New Image(hDrawingArea.Width, hDrawingArea.Height, Color.Transparent)
+    Paint.Begin($hText)
+    
+    Paint.Translate(Desktop.Scale, Desktop.Scale * 2)
+    
+    Paint.Font = Font["+10,Bold"]
+    Y = Paint.Font.Ascent
+    sVersion = Project.FullVersion
+    If sVersion Begins "3.14." And If sVersion Not Ends ".90" Then
+      If sVersion Ends ".0" Then sVersion = Left(sVersion, -2)
+      X = PaintText("Gambas " & sVersion, 8, Y, Color.White) 'TEXT_COLOR)
+      X += Desktop.Scale * 17
+      For I = -6 To 14
+        Paint.Font = Font[Format(I, "+0") & ",Italic,Bold"]
+        PaintText("π", X, Y, Color.White)
+        X -= Paint.Font.H / 6
+      Next
+    Else
+      X = PaintText("Gambas " & sVersion, 8, Y, Color.White) 'TEXT_COLOR)
+    Endif
+    'Paint.Font = Font["+12,Bold"]
+    'PaintText(Project.FullVersionWithRevision, X + 8, Paint.Font.Ascent, Color.White) 'Color.SelectedForeground)
+    
+    Paint.Font = Font["+4,Bold"]
+    Y += Paint.Font.Height
+    PaintText("http://gambas.sourceforge.net", 12, Y, TEXT_COLOR) 'Color.LightForeground)
+    
+    Paint.Font = Font["Bold"]
+    Y += 16
+    'PaintText(("This program is published under the GNU General Public License.") & "\n" & ("The Gambas font is published under the SIL Open Font License."), 12, Y, Color.SelectedForeground)
+    sText = ("This program is published under the GNU General Public License.") & "<br>" & ("The Gambas font is published under the SIL Open Font License.")
+    Paint.Background = Color.Black
+    Paint.DrawRichTextShadow(sText, 12, Y, Paint.W - 24, Paint.H - Y - 6, Align.TopNormal, Paint.Font.Height \ 4, 1)
+    Paint.Background = Color.SelectedForeground
+    Paint.DrawRichText(sText, 12, Y, Paint.W - 24, Paint.H - Y - 6, Align.TopNormal)
+    
+    Paint.End
+    
+    '$hLogo.Brightness(-0.1)
+    
+  Endif
+
+  'Paint.DrawImage($hLogo, hDrawingArea.W - $hLogo.Width, -10 - Desktop.Scale)
+  Paint.DrawImage($hLogo, hDrawingArea.W - $hLogo.Width - Desktop.Scale, 0)
+  
+  If $hTimer Then
+  
+    If $bTear Then
+      
+      If Not $hTear Then $hTear = New Image($hLogo.W, $hLogo.H, Color.Transparent, Image.Premultiplied)
+      
+      $hTear.Fill(Color.Transparent)
+      
+      Paint.Begin($hTear)
+      Paint.Translate(112, 87)
+      
+      'Debug $aTears.Count
+      
+      I = 0
+      While I < $aTears.Count
+        
+        hTear = $aTears[I]
+        Inc hTear.Age
+        bDraw = False
+        
+        Randomize hTear.Seed
+        
+        XT = Rnd(-4, 4)
+        YT = 0.0
+        
+        DXT = Rnd(-2, 2)
+        DYT = 0.1
+        
+        For J = 0 To hTear.Age
+          
+          iAge = hTear.Age - J
+          XT += DXT + Rnd(-0.1, 0.1)
+          YT += DYT
+          
+          iLum = Color[$hLogo[XT + 112, YT + 87]].Luminance
+          If iLum < 24 And If DYT > 0.5 Then
+            DYT = 0.1
+          Else
+            DYT = Max(0.5, DYT + 0.025)
+          Endif
+          DXT *= 0.8
+          
+          If iAge < 128 And If (YT - R) < (Paint.H - 87) Then
+            
+            R = Max(0.5, 3 - Sqr(iAge) / 4)
+            Paint.Ellipse(XT - R, YT - R, R * 2, R * 2)
+            Paint.Background = Color.RGB(220, 230, 255, 192) ', 255 + (iAge \ 8) - 16)
+            Paint.Fill
+            bDraw = True
+            
+          Endif
+          
+        Next
+        
+        If bDraw Then
+          Inc I
+        Else
+          $aTears.Remove(I)
+        Endif
+          
+      Wend
+      
+      Paint.End
+      
+      Paint.DrawImage($hTear, hDrawingArea.W - $hLogo.Width - Desktop.Scale, 0)
+      
+    Endif
+    
+    If $bSnow Then
+  
+      If Not $hSnow Then 
+        $hSnow = New Image(hDrawingArea.Width, hDrawingArea.Height, Color.Transparent)
+        Paint.Begin($hSnow)
+        hFir = Image.Load("welcome/fir.png")
+        Paint.DrawImage(hFir, 430, $hSnow.H - hFir.H)
+        Paint.End
+      Endif
+    
+      Paint.DrawImage($hSnow, 0, 0)
+      
+      For I = 0 To $aSnowFlakes.Max
+        hSnowFlake = $aSnowFlakes[I]
+        With hSnowFlake
+          S = 1 + .Size \ 2
+          Paint.DrawImage($aImage[.Size], CInt(.X) - S, CInt(.Y) - S)
+        End With
+      Next
+      
+    Endif
+    
+    $hTimer.Start
+    
+  Endif
+
+  Paint.DrawImage($hText, 0, 0)
+  
+End
+
+Fast Public Sub SnowTimer_Timer()
+  
+  Dim hDrawingArea As DrawingArea = $hObs.Object
+  Dim hSnowFlake As CSnowFlake
+  Dim I As Integer
+  Dim H As Integer
+  Dim S As Integer
+  Dim X As Integer
+  Dim Y As Integer
+  Dim C As Integer
+  Dim hTear As CTear
+  
+  $hTimer.Stop
+  If Not Object.IsValid(hDrawingArea) Then Return
+  
+  If $bSnow Then
+  
+    H = hDrawingArea.H - 1
+    
+    Paint.Begin($hSnow)
+    Paint.Background = Color.SetAlpha(&HF0F0F0&, 128)
+    
+    While I < $aSnowFlakes.Count
+      hSnowFlake = $aSnowFlakes[I]
+      With hSnowFlake
+        .X += .DX
+        .Y += .DY
+        X = CInt(.X)
+        Y = Min(H, CInt(.Y))
+        C = $hSnow[X, Y]
+        
+        If Y < H And If C <> Color.White Then
+          If .IgnoreTree Or If Color[C].Alpha > 16 Then
+            Inc I
+            Continue
+          Endif
+        Endif
+        
+        .X -= .DX
+        .Y -= .DY
+        
+        If .DX Then
+          
+          If .DX < 1 Then
+            .DX = 0
+          Else
+            .DX *= 0.5
+            .DY *= 0.75
+          Endif
+          Inc I
+          Continue
+          
+        Endif
+        
+        $aSnowFlakes.Remove(I)
+        'S = .Size \ 2
+        'Paint.DrawImage($aImage[S], X - S \ 2, Y - S \ 2)
+        'Paint.DrawImage($aImage[.Size], CInt(.X), CInt(.Y))
+        S = 1 + Min(3, .Size \ 2)
+        Paint.Ellipse(X - S \ 2, Y - S \ 2 + 1, S, S)
+        Paint.Fill
+  
+      End With
+  
+    Wend
+    
+    Paint.End
+    
+    If $aSnowFlakes.Count < MAX_SNOW_FLAKES Then
+      For I = 0 To Rand(4)
+        hSnowFlake = New CSnowFlake
+        hSnowFlake.X = Rand(-10, hDrawingArea.W + 10)
+        hSnowFlake.Size = Rand($aImage.Max)
+        hSnowFlake.DY = 0.5 + hSnowFlake.Size / 3 + Rnd
+        hSnowFlake.DX = (Rnd * 3 - 1.5) * hSnowFlake.DY
+        hSnowFlake.IgnoreTree = $bIgnoreTree
+        $bIgnoreTree = Not $bIgnoreTree
+        $aSnowFlakes.Add(hSnowFlake)
+      Next
+    Endif
+    
+  Endif
+  
+  If $bTear Then
+    Inc $iTearAge
+    If Not NoTear And If $aTears.Count < 3 Then
+
+      Randomize
+      If $aTears.Count = 0 Or If Rnd < 0.005 Then
+        hTear = New CTear
+        hTear.Seed = Rand(2147483647)
+        $aTears.Add(hTear)
+      Endif
+      
+    Endif
+  Endif
+  
+  hDrawingArea.Refresh
+  
+End
+

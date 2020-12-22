@@ -1,0 +1,479 @@
+' Gambas class file
+
+Export
+
+'Event LineChange
+
+Private $iStartLine As Integer
+Private $iStartColumn As Integer
+Private $iEndLine As Integer
+Private $iEndColumn As Integer
+
+Private $hLabel As TextLabel
+Private $hLabelTimer As Timer
+Private $hObserver As Observer
+
+Private $bLabelBottom As Boolean
+
+Private $sFindPrefix As String
+Private $aFind As Integer[]
+
+Private $iLastLine As Integer
+Private $iLastLineOffset As Integer
+
+Public Sub _new()
+  
+  $hObserver = New Observer(Me) As "Editor"
+  
+End
+
+Public Sub ReadConfig(Optional bPreview As Boolean)
+
+  Project.SetEditorFont(Me)
+
+  MTheme.InitEditor(Me)
+
+  Me.ShowPosition = True
+  Me.ShowLimit = Settings["/Editor/ProcedureLimit", True]
+  Me.ShowModified = Settings["/Editor/ShowChange", True]
+  Me.ShowLineNumber = Settings["/Editor/ShowLineNumbers", False]
+  Me.ShowCurrent = Settings["/Editor/ShowCurrent", True]
+  Me.ShowExpand = Settings["/Editor/ShowExpand", True]
+  Me.ShowSpaces = Settings["/Editor/ShowSpaces", True]
+  Me.ShowIndent = Settings["/Editor/ShowIndent", True]
+  If bPreview Then
+    Me.ShowPreview = Settings["/Editor/ShowPreview", False]
+  Else
+    Me.ShowPreview = False
+  Endif
+  'Me.Flags[Editor.NoFolding] = Not Settings["/Editor/ShowFolding", True]
+  Me.ShowBraces = True
+  Me.CloseBraces = Settings["/Editor/CloseBraces", 1]
+  Me.CloseStrings = Settings["/Editor/CloseStrings", 1]
+  
+  'Me.KeywordsUseUpperCase = Settings["/Editor/KeywordsUseUpperCase"]
+  
+End
+
+Public Sub GetPosition() As Integer
+  
+  Dim iLine, iColumn, iInd, iPos As Integer
+  
+  iLine = Me.Line
+  iColumn = Me.Column
+  If Me.Selected Then 
+    If Me.SelectionLine = Me.Line Then
+      iColumn = Min(iColumn, Me.SelectionColumn)
+    Else If Me.SelectionLine < Me.Line Then
+      iLine = Me.SelectionLine
+      iColumn = Me.SelectionColumn
+    Endif
+  Endif
+      
+  For iInd = 0 To iLine - 1
+    iPos += Len(Me[iInd].Text) + 1
+  Next
+  iPos += Len(String.Left(Me[iLine].Text, iColumn))
+  
+  Return iPos
+  
+End
+
+Fast Private Sub GetLineOffset(iLine As Integer) As Integer
+
+  Dim I As Integer
+  Dim iOffset As Integer
+  
+  If $iLastLine >= 0 And If iLine >= $iLastLine Then
+    I = $iLastLine
+    iOffset = $iLastLineOffset
+  Endif
+  
+  While I < iLine
+    iOffset += Len(Me[I].Text) + 1
+    Inc I
+  Wend
+  
+  $iLastLine = iLine
+  $iLastLineOffset = iOffset
+  
+  Return iOffset
+  
+End
+
+Public Sub SetPosition(hResult As CSearchResult, bJustCheck As Boolean) As Boolean
+  
+  Dim iLine, iColumn As Integer
+  Dim sLine As String
+  Dim iOffset As Integer
+  
+  iLine = hResult.Line - 1
+  
+  If bJustCheck Then 
+
+    iOffset = GetLineOffset(iLine)
+    'If iLine >= Me.Count Then Return True
+    
+    sLine = Me[iLine].Text
+    iColumn = String.Len(Left$(sLine, hResult.Pos - iOffset))
+  
+    If Me.Highlight Then
+      If InStr(String.Mid$(Me[iLine].Purge(Not FSearch.IgnoreComments, Not FSearch.IgnoreStrings, Chr$(1)), iColumn + 1, hResult.Length), Chr$(1)) Then Return True
+    Endif
+    
+    hResult.Column = iColumn
+    hResult.Text = sLine
+
+  Else
+    ' TODO Me[iLine].Expanded = True
+    Me.GotoCenter(hResult.Column, iLine)
+    Me.Goto(hResult.Column + hResult.Length, iLine, True)
+    
+  Endif
+  
+End
+
+Public Sub Replace(sReplace As String) As Boolean
+  
+  Dim iLine, iColumn As Integer
+  
+  If Me.ReadOnly Then Return True
+  If Not Me.Selected Then Return True
+  
+  iLine = Me.SelectionLine
+  iColumn = Me.SelectionColumn
+  Me.Begin
+  Me.Insert(sReplace)
+  Me.Goto(iColumn, iLine)
+  Me.Goto(iColumn + String.Len(sReplace), iLine, True)
+  Me.End  
+  
+End
+
+Public Sub GetSelection() As String
+  
+  If Me.Selected And If Me.SelectionLine = Me.Line Then
+    Return Me.SelectedText
+  Endif
+  
+End
+
+Public Sub StoreSelection(Optional bNoFullLines As Boolean)
+
+  With Me
+    
+    $iStartLine = .SelectionLine
+    $iStartColumn = .SelectionColumn
+    $iEndLine = .Line
+    $iEndColumn = .Column
+    
+    If Not bNoFullLines Then 
+      If $iEndLine >= $iStartLine Then
+        If $iEndColumn > 0 Or Not .Selected Then 
+          Inc $iEndLine
+          $iEndColumn = 0
+          $iStartColumn = 0
+          RecallSelection
+        Endif
+      Else
+        If $iStartColumn > 0 Or Not .Selected Then 
+          Inc $iStartLine
+          $iStartColumn = 0
+          $iEndColumn = 0
+          RecallSelection
+        Endif
+      Endif
+    Endif
+    
+  End With
+  
+
+End
+
+Public Sub RecallSelection()
+
+  Me.Goto($iStartColumn, $iStartLine)
+  Me.Goto($iEndColumn, $iEndLine, True)
+
+End
+
+Public Sub LabelTimer_Timer()
+
+  If $hLabel.Visible Then
+    HideMessageLabel
+    $hLabelTimer.Stop
+  Endif
+
+End
+
+Public Sub Label_MouseDown()
+
+  LabelTimer_Timer
+
+End
+
+Private Sub MoveMessageLabel()
+
+  Dim X As Integer
+  Dim Y As Integer
+  
+  If Not $hLabel Then Return
+  If Not $hLabel.Visible Then Return
+  
+  If $bLabelBottom Then
+    X = 0
+    Y = Container(Me.Proxy).ClientH - $hLabel.H
+  Else
+    X = Me.ToPosX()
+    Y = Me.ToPosY() + Me.LineHeight
+  Endif
+
+  X = Me.ScreenX + X - $hLabel.Parent.ScreenX
+  Y = Me.ScreenY + Y - $hLabel.Parent.ScreenY
+  
+  If (Y + $hLabel.H) > $hLabel.Parent.ClientH Then Y -= $hLabel.H + Me.LineHeight
+  $hLabel.Move(X, Y)
+  
+End
+
+
+Public Sub ShowMessageLabel(sStr As String, iStyle As Integer, Optional bBottom As Boolean)
+
+  Dim hParent As Container
+
+  If Not $hLabel Then
+    
+    hParent = Me.Parent
+    If hParent Is HSplit Or If hParent Is VSplit Then hParent = hParent.Parent
+    
+    $hLabel = New TextLabel(hParent) As "Label"
+    $hLabel.Ignore = True
+    $hLabel.AutoResize = True
+    $hLabel.Border = Border.None 'If(bBottom, Border.None, Border.Plain)
+    $hLabel.Padding = 2
+    $hLabel.Wrap = False
+    $hLabelTimer = New Timer As "LabelTimer"
+    $hLabelTimer.Delay = 10000
+    
+  Endif
+  
+  ' $hLabel.Foreground = Me.Styles[Highlight.Normal].Color
+  ' $hLabel.Background = Color.Merge(Me.Styles[iStyle].Color, Me.Styles[Highlight.Background].Color, 0.3)
+  If iStyle = Highlight.Normal Then
+    $hLabel.Background = Me.Styles[Highlight.Background].Color
+    $hLabel.Foreground = Me.Styles[iStyle].Color
+    $hLabel.Border = Border.Plain
+  Else
+    $hLabel.Background = Me.Styles[iStyle].Color 'Me.Styles[Highlight.Normal].Color
+    $hLabel.Foreground = Me.Styles[Highlight.Background].Color
+    $hLabel.Border = Border.None
+  Endif
+  $hLabel.Text = "&nbsp;&nbsp;" & Replace(Replace(sStr, "<p>", " "), "<br>", " ") & "&nbsp;&nbsp;"
+
+  $bLabelBottom = bBottom
+  
+  $hLabel.Show
+  $hLabel.Raise
+  MoveMessageLabel
+  
+  $hLabelTimer.Restart
+  Me.SetFocus
+
+End
+
+Public Sub Editor_GotFocus()
+  
+  $aFind = Null
+  $sFindPrefix = ""
+  
+End
+
+Public Sub Editor_Cursor()
+  
+  HideMessageLabel
+  
+  ' If Me.Line <> $iLastLine Then
+  '   $iLastLine = Me.Line
+  '   '$aFind = Null
+  '   '$sFindPrefix = ""
+  '   'Raise LineChange
+  ' Endif
+  
+End
+
+
+Public Sub Editor_Scroll()
+  
+  MoveMessageLabel
+  'Try $hLabel.Hide
+  
+End
+
+Public Sub HideMessageLabel()
+  
+  If Not $hLabel Or If Not $hLabel.Visible Then Return
+  $hLabel.Hide
+  
+End
+
+Public Sub IsSameFindStrings((sPrefix) As String) As Boolean
+  
+  'Return sPrefix = $sFindPrefix
+  
+End
+
+
+Public Sub FindStrings(sPrefix As String) As Integer[]
+  
+  Dim iLine As Integer
+  
+  'If sPrefix = $sFindPrefix Then Return $aFind
+  
+  $sFindPrefix = sPrefix
+  $aFind = New Integer[]
+  
+  iLine = -1
+  Do
+  
+    iLine = Me.FindNextString(sPrefix, iLine + 1)
+    If iLine < 0 Then Break 
+    'If iLine = Me.Line Then Continue
+    
+    $aFind.Add(iLine)
+  
+  Loop 
+  
+  Return $aFind
+  
+End
+
+Public Sub Editor_Arrange()
+  
+  MoveMessageLabel
+  
+End
+
+Static Public Sub GetModeFromPath(sPath As String) As String
+
+  Dim sMode As String
+  Dim sExt As String
+  
+  sExt = File.Ext(sPath)
+  
+  Select Case sExt
+    Case "css"
+      sMode = "css"
+    Case "webpage"
+      sMode = "webpage"
+    Case "js"
+      sMode = "javascript"
+    Case "c"
+      sMode = "c"
+    Case "cpp", "h"
+      sMode = "cplusplus"
+    Case "gbs"
+      sMode = "gambas"
+    Case "html", "htm", "xml", "kml", "rss"
+      sMode = "html"
+    Case "module", "test", "class"
+      If Project.IsSourcePath(sPath) Then sMode = "gambas"
+      If Project.IsHiddenPath(sPath) Then sMode = "gambas"
+  End Select
+  
+  Return sMode
+  
+End
+
+Public Sub EnterDiffModeWith(Path As String)
+
+  Dim sLine As String
+  Dim iLine As Integer
+  Dim aAdded As New Integer[]
+  Dim cRemoved As New Collection
+  Dim aRemoved As String[]
+  Dim iLineRemoved As Integer
+  Dim aDiff As String[]
+  Dim bStart As Boolean
+
+  aDiff = Split(VersionControl.Diff(Path), "\n")
+  
+  For Each sLine In aDiff
+    
+    If sLine Begins "@@ " Then
+      GoSub HANDLE_REMOVED
+      iLine = CInt(Scan(sLine, "*+*,*")[1]) - 1
+      bStart = True
+      Continue
+    Endif
+    
+    If Not bStart Then Continue
+    
+    If sLine Begins "-" Then
+      
+      If Not aRemoved Then
+        iLineRemoved = iLine
+        aRemoved = New String[]
+      Endif
+      
+      aRemoved.Add(Mid$(sLine, 2))
+      
+      Continue
+      
+    Endif
+    
+    If sLine Begins "+" Then
+      
+      GoSub HANDLE_REMOVED
+      
+      If aAdded.Count And If aAdded[aAdded.Max - 1] + aAdded[aAdded.Max] = iLine Then
+        Inc aAdded[aAdded.Max]
+      Else
+        aAdded.Add(iLine)
+        aAdded.Add(1)
+      Endif
+      
+      Inc iLine
+      Continue
+      
+    Endif
+    
+    If sLine Begins " " Then
+      GoSub HANDLE_REMOVED
+      Inc iLine
+    Endif
+    
+  Next
+  
+  GoSub HANDLE_REMOVED
+  
+  Me.EnterDiffMode(aAdded, cRemoved)
+  Me.Goto(0, Me.Line)
+  Me.SetFocus
+  
+HANDLE_REMOVED:
+
+  If aRemoved Then
+    cRemoved[iLineRemoved] = aRemoved
+    aRemoved = Null
+    iLineRemoved = 0
+  Endif
+  Return
+
+End
+
+Public Sub FillWithHistory(sPath As String)
+  
+  Inc Application.Busy
+  Me.Clear
+  Me.Text = VersionControl.History(sPath)
+  Me.SetFocus
+  Me.Reset
+  Dec Application.Busy
+  
+End
+
+Public Sub Editor_Change()
+  
+  $iLastLine = -1
+  
+End

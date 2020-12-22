@@ -1,0 +1,72 @@
+' Gambas class file
+
+Create Static
+
+Private $hPrinter As New Printer As "Printer"
+Private $hReport As Report
+
+Static Public Sub InitPrinterFromReport(hPrinter As Printer, hReport As Report)
+
+  hPrinter.FullPage = True
+  
+  hPrinter.Orientation = hReport.Orientation
+  
+  If hReport.Paper = Printer.Custom Then
+    'pnlCustom.Enabled = True
+    hPrinter.PaperWidth = Report.UnitTo(TSizeParse[hReport.Width].ToInch(), "in", "mm")
+    hPrinter.PaperHeight = Report.UnitTo(TSizeParse[hReport.Height].ToInch(), "in", "mm")
+  Else
+    hPrinter.Paper = hReport.Paper
+  Endif 
+  
+End
+
+Public Sub PrintReport(hReport As Report, Optional MyPrinter As Printer)
+
+  Dim hImage As Image
+
+  $hReport = hReport
+  $hReport.Scale = 1
+  '$hPrint = hReport.Clone()
+  If MyPrinter Then 
+    $hPrinter = MyPrinter
+  Else
+    $hPrinter = New Printer
+  Endif
+  
+  Object.Attach($hPrinter, Me, "Printer")
+  
+  InitPrinterFromReport($hPrinter, $hReport)
+  
+  If Not MyPrinter Then
+    If $hPrinter.Configure() Then Return
+  Endif
+
+  ' The report layout only works on Image, i.e. when DPI = 72
+  hImage = New Image(1, 1)
+  Paint.Begin(hImage)
+  $hReport.Layout()
+  Paint.End
+
+  $hPrinter.Print
+  
+End
+
+Public Sub Printer_Draw()
+
+  Paint.FontScale = 25.4 / 72 * Paint.W / $hPrinter.PaperWidth * 72 / 96 * 96 / $hPrinter.Resolution
+  $hReport.Paint($hPrinter.Page)
+
+End
+
+Public Sub Printer_Begin()
+
+  $hPrinter.Count = $hReport.PageCount
+
+End
+
+Public Sub Printer_End()
+
+  $hReport = Null
+
+End
