@@ -1,8 +1,5 @@
 COMPONENT = gb.dwg
-include ../component.am
-
-gblib_LTLIBRARIES = gb.dwg.la
-
+include $(top_srcdir)/component.am
 gb_dwg_la_LIBADD = @LIBREDWG_LIBS@
 gb_dwg_la_LDFLAGS = -no-undefined -module @LD_FLAGS@
 gb_dwg_la_CFLAGS = @LIBREDWG_INC@ -Wno-discarded-qualifiers
@@ -16,4 +13,3 @@ gb_dwg_la_SOURCES = \
 	c_dwg.c \
 	c_ents.c \
 	$(EXTRA_HEADERS)
-

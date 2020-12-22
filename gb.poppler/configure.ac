@@ -1,3 +1,4 @@
+
 dnl ---- configure.ac for gb.poppler
 m4_include([../version.m4])
 AC_INIT(gambas3-gb-poppler, GB_VERSION, GB_MAIL, [], GB_URL)
